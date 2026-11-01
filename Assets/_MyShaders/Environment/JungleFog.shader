@@ -27,6 +27,11 @@ Shader "Hidden/CHRONO WILD/Jungle Fog"
    float4 _JungleFogMarch;
    // x density, y start distance, z height falloff
    float4 _JungleHaze;
+   // xy region center (world xz), z radius, w falloff
+   float4 _JungleFogRegion;
+   float _JungleFogOpenDensity;
+   // rgb haze color and a density used when the camera stands outside the forest region
+   float4 _JungleOpenHaze;
    // rgb haze color, a sun tint amount
    float4 _JungleHazeColor;
 
@@ -53,6 +58,9 @@ Shader "Hidden/CHRONO WILD/Jungle Fog"
     // Exponential height profile, capped so hollows don't turn into solid walls.
     float height = min(exp(-(p.y - _JungleFogParams.y) * _JungleFogParams.z), 3.0);
     float d = _JungleFogParams.x * height;
+    // Dense fog only under the forest; open ground (beach, clearings outside) keeps a light haze.
+    float region = 1.0 - smoothstep(_JungleFogRegion.z, _JungleFogRegion.z + _JungleFogRegion.w, distance(p.xz, _JungleFogRegion.xy));
+    d *= lerp(_JungleFogOpenDensity, 1.0, region);
     if (withNoise)
     {
      float3 q = p * _JungleFogNoise.y + _JungleFogWind.xyz * _Time.y * _JungleFogNoise.y;
@@ -88,9 +96,10 @@ Shader "Hidden/CHRONO WILD/Jungle Fog"
     float3 sunLight = sun.color * Phase(dot(dir, sun.direction), _JungleFogMarch.y) * _JungleFogMarch.x * 4.0 * PI;
     float3 ambient = _JungleFogAmbient.rgb;
 
+    // Zero steps (low quality) skips the shadow-marched shafts; only the analytic fog remains.
     int steps = (int)_JungleFogMarch.w;
-    float marchLength = min(dist, _JungleFogMarch.z);
-    float stepLength = marchLength / steps;
+    float marchLength = steps > 0 ? min(dist, _JungleFogMarch.z) : 0.0;
+    float stepLength = marchLength / max(steps, 1);
     // Fixed per-pixel jitter: an animated pattern needs TAA, without it the shafts shimmer while walking.
     float jitter = InterleavedGradientNoise(input.positionCS.xy, 0);
 
@@ -128,10 +137,13 @@ Shader "Hidden/CHRONO WILD/Jungle Fog"
     float hazeDist = max(dist - _JungleHaze.y, 0.0);
     float midHeight = camera.y + dir.y * min(dist, 400.0) * 0.5;
     float thin = exp(-max(midHeight - _JungleFogParams.y, 0.0) * _JungleHaze.z);
-    float haze = 1.0 - exp(-hazeDist * _JungleHaze.x * thin);
+    // Humid grey-green haze under the canopy, clear blue air when the camera is on open ground.
+    float inForest = 1.0 - smoothstep(_JungleFogRegion.z, _JungleFogRegion.z + _JungleFogRegion.w, distance(camera.xz, _JungleFogRegion.xy));
+    float hazeDensity = lerp(_JungleOpenHaze.a, _JungleHaze.x, inForest);
+    float haze = 1.0 - exp(-hazeDist * hazeDensity * thin);
     if (sky)
         haze *= saturate(1.0 - dir.y * 2.5);
-    float3 hazeColor = _JungleHazeColor.rgb + sun.color * Phase(dot(dir, sun.direction), 0.45) * _JungleHazeColor.a * 4.0 * PI;
+    float3 hazeColor = lerp(_JungleOpenHaze.rgb, _JungleHazeColor.rgb, inForest) + sun.color * Phase(dot(dir, sun.direction), 0.45) * _JungleHazeColor.a * 4.0 * PI;
     color = lerp(color, hazeColor, haze);
 
     return half4(color, scene.a);

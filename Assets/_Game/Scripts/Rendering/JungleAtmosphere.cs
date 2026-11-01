@@ -24,6 +24,13 @@ namespace ChronoWild.Rendering
         [Tooltip("Distance used for the sky so it fades into the haze instead of staying sharp.")]
         public float skyDistance = 300f;
 
+        [Header("Forest region")]
+        [Tooltip("Center (x, z) of the dense forest fog. Outside the region only a light coastal haze remains.")]
+        public Vector2 regionCenter = new Vector2(293f, 248f);
+        public float regionRadius = 90f;
+        public float regionFalloff = 45f;
+        [Range(0f, 1f)] public float openAreaDensity = 0.08f;
+
         [Header("Drifting humidity")]
         [Range(0f, 1f)] public float noiseAmount = 0.45f;
         public float noiseScale = 0.06f;
@@ -35,7 +42,8 @@ namespace ChronoWild.Rendering
         [Range(0f, 0.95f)] public float anisotropy = 0.6f;
         [Tooltip("Meters of the view ray that are marched against the shadow map.")]
         public float marchDistance = 60f;
-        [Range(8, 64)] public int marchSteps = 28;
+        [Tooltip("0 disables the shadow-marched light shafts (low quality).")]
+        [Range(0, 64)] public int marchSteps = 28;
 
         [Header("Distance haze")]
         [Tooltip("Extinction per meter beyond the start distance; fades far objects into the sky color.")]
@@ -45,6 +53,9 @@ namespace ChronoWild.Rendering
         [Range(0f, 0.2f)] public float hazeHeightFalloff = 0.012f;
         public Color hazeColor = new Color(0.55f, 0.62f, 0.62f);
         [Range(0f, 1f)] public float hazeSunTint = 0.12f;
+        [Tooltip("Haze used when the camera stands outside the forest region (coast, open ground).")]
+        public Color openHazeColor = new Color(0.62f, 0.74f, 0.86f);
+        [Range(0f, 0.05f)] public float openHazeDensity = 0.0025f;
 
         static readonly int FogParams = Shader.PropertyToID("_JungleFogParams");
         static readonly int FogAmbient = Shader.PropertyToID("_JungleFogAmbient");
@@ -52,6 +63,9 @@ namespace ChronoWild.Rendering
         static readonly int FogWind = Shader.PropertyToID("_JungleFogWind");
         static readonly int FogMarch = Shader.PropertyToID("_JungleFogMarch");
         static readonly int Haze = Shader.PropertyToID("_JungleHaze");
+        static readonly int Region = Shader.PropertyToID("_JungleFogRegion");
+        static readonly int OpenDensity = Shader.PropertyToID("_JungleFogOpenDensity");
+        static readonly int OpenHaze = Shader.PropertyToID("_JungleOpenHaze");
         static readonly int HazeColor = Shader.PropertyToID("_JungleHazeColor");
 
         void OnEnable() => Active = this;
@@ -79,6 +93,10 @@ namespace ChronoWild.Rendering
             Shader.SetGlobalVector(FogWind, windVelocity);
             Shader.SetGlobalVector(FogMarch, new Vector4(sunScattering, anisotropy, marchDistance, marchSteps));
             Shader.SetGlobalVector(Haze, new Vector4(hazeDensity, hazeStart, hazeHeightFalloff, 0f));
+            Shader.SetGlobalVector(Region, new Vector4(regionCenter.x, regionCenter.y, regionRadius, Mathf.Max(regionFalloff, 1f)));
+            Shader.SetGlobalFloat(OpenDensity, openAreaDensity);
+            var open = openHazeColor.linear;
+            Shader.SetGlobalVector(OpenHaze, new Vector4(open.r, open.g, open.b, openHazeDensity));
             var haze = hazeColor.linear;
             Shader.SetGlobalVector(HazeColor, new Vector4(haze.r, haze.g, haze.b, hazeSunTint));
         }

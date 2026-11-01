@@ -48,6 +48,7 @@ Shader "CHRONO WILD/Water/Jungle Puddle"
    half _RippleStrength; float _RippleScale; float _RippleSpeed; half _ReflectionStrength;
    float _SSRSteps; float _SSRDistance; float _SSRThickness; half _ProbeDim; half _ShoreSoftness; half _WetEdgeDarkening;
    CBUFFER_END
+   float _ChronoQuality;
 
    struct Attributes { float4 positionOS:POSITION; half4 color:COLOR; };
    struct Varyings { float4 positionCS:SV_POSITION; float3 positionWS:TEXCOORD0; half edge:TEXCOORD1; };
@@ -148,7 +149,7 @@ Shader "CHRONO WILD/Water/Jungle Puddle"
     n = normalize(lerp(half3(0, 1, 0), n, calm));
 
     // Refraction: offset the bottom lookup, rejecting samples that land in front of the water.
-    float2 offset = n.xz * _Refraction * calm;
+    float2 offset = n.xz * _Refraction * calm * step(0.5, _ChronoQuality);
     float2 refrUV = screenUV + offset;
     if (LinearEyeDepth(SampleSceneDepth(refrUV), _ZBufferParams) < surfaceEye) refrUV = screenUV;
     half3 bottom = SampleSceneColor(refrUV);
@@ -164,7 +165,7 @@ Shader "CHRONO WILD/Water/Jungle Puddle"
     float3 reflDir = reflect(-view, n);
     half3 probe = GlossyEnvironmentReflection(reflDir, v.positionWS, _Roughness, 1, screenUV) * _ProbeDim;
     float jitter = InterleavedGradientNoise(v.positionCS.xy, 0);
-    half4 ssr = TraceReflection(v.positionWS, reflDir, jitter);
+    half4 ssr = _ChronoQuality > 0.5 ? TraceReflection(v.positionWS, reflDir, jitter) : half4(0, 0, 0, 0);
     half3 reflection = lerp(probe, ssr.rgb, ssr.a) * _ReflectionStrength;
 
     float4 shadowCoord = TransformWorldToShadowCoord(v.positionWS);
