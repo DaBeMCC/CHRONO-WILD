@@ -35,6 +35,7 @@ Shader "CHRONO WILD/Environment/Geology Lit"
    #pragma shader_feature_local _TRIPLANAR
    #pragma multi_compile_instancing
    #pragma multi_compile_fog
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
    #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
    #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
    #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
@@ -47,7 +48,13 @@ Shader "CHRONO WILD/Environment/Geology Lit"
    #else
     d.shadowCoord=TransformWorldToShadowCoord(v.positionWS);
    #endif
-   d.bakedGI=SampleSH(n);d.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(v.positionCS);d.shadowMask=half4(1,1,1,1);half4 c=UniversalFragmentPBR(d,s);c.rgb=MixFog(c.rgb,v.fog);return half4(c.rgb,_EdgeClip>.5?v.color.a:1);}
+   
+    #if defined(PROBE_VOLUMES_L1)||defined(PROBE_VOLUMES_L2)
+    d.bakedGI=SampleProbeVolumePixel(SampleSH(n),GetAbsolutePositionWS(v.positionWS),n,GetWorldSpaceNormalizeViewDir(v.positionWS),v.positionCS.xy);
+    #else
+    d.bakedGI=SampleSH(n);
+    #endif
+    d.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(v.positionCS);d.shadowMask=half4(1,1,1,1);half4 c=UniversalFragmentPBR(d,s);c.rgb=MixFog(c.rgb,v.fog);return half4(c.rgb,_EdgeClip>.5?v.color.a:1);}
    ENDHLSL
   }
   Pass

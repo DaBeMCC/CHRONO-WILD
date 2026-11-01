@@ -2,7 +2,9 @@
     "name": "ChronoWild.Runtime",
     "rootNamespace": "ChronoWild",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

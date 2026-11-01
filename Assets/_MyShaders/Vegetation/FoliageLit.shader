@@ -44,6 +44,15 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
   return o;
  }
  half4 LeafSample(float2 uv){half4 c=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv)*_BaseColor;clip(c.a-_Cutoff);return c;}
+ #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+ // Dithered LOD cross-fade so models blend into their simpler versions instead of popping.
+ half4 LeafSampleFade(Varyings v)
+ {
+  #if defined(LOD_FADE_CROSSFADE)
+   LODFadeCrossFade(v.positionCS);
+  #endif
+  return LeafSample(v.uv);
+ }
  half3 LeafNormal(Varyings v,half sign)
  {
   half3 tangentNormal=UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap,sampler_BumpMap,v.uv),_BumpScale);
@@ -63,7 +72,9 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
    #pragma vertex FoliageVertex
    #pragma fragment FoliageFragment
    #pragma multi_compile_instancing
+   #pragma multi_compile _ LOD_FADE_CROSSFADE
    #pragma multi_compile_fog
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
    #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
    #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
    #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
@@ -73,8 +84,14 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
    half4 FoliageFragment(Varyings v,FRONT_FACE_TYPE face:FRONT_FACE_SEMANTIC):SV_Target
    {
     UNITY_SETUP_INSTANCE_ID(v);UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(v);
-    half4 leaf=LeafSample(v.uv);half3 n=LeafNormal(v,IS_FRONT_VFACE(face,1.0h,-1.0h));
-    InputData data=(InputData)0;data.positionWS=v.positionWS;data.normalWS=n;data.viewDirectionWS=GetWorldSpaceNormalizeViewDir(v.positionWS);data.shadowCoord=v.shadowCoord;data.fogCoord=v.fog;data.bakedGI=SampleSH(n);data.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(v.positionCS);data.shadowMask=half4(1,1,1,1);
+    half4 leaf=LeafSampleFade(v);half3 n=LeafNormal(v,IS_FRONT_VFACE(face,1.0h,-1.0h));
+    InputData data=(InputData)0;data.positionWS=v.positionWS;data.normalWS=n;data.viewDirectionWS=GetWorldSpaceNormalizeViewDir(v.positionWS);data.shadowCoord=v.shadowCoord;data.fogCoord=v.fog;
+    #if defined(PROBE_VOLUMES_L1)||defined(PROBE_VOLUMES_L2)
+    data.bakedGI=SampleProbeVolumePixel(SampleSH(n),GetAbsolutePositionWS(v.positionWS),n,GetWorldSpaceNormalizeViewDir(v.positionWS),v.positionCS.xy);
+    #else
+    data.bakedGI=SampleSH(n);
+    #endif
+    data.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(v.positionCS);data.shadowMask=half4(1,1,1,1);
     SurfaceData surface=(SurfaceData)0;surface.albedo=leaf.rgb;surface.alpha=1;surface.metallic=0;surface.specular=half3(.04,.04,.04);surface.smoothness=_Smoothness;surface.normalTS=half3(0,0,1);surface.occlusion=1;
     half4 color=UniversalFragmentPBR(data,surface);
     Light sun=GetMainLight(v.shadowCoord);
@@ -93,6 +110,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
    #pragma vertex ShadowVertex
    #pragma fragment ShadowFragment
    #pragma multi_compile_instancing
+   #pragma multi_compile _ LOD_FADE_CROSSFADE
    #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
    float3 _LightDirection;float3 _LightPosition;
    Varyings ShadowVertex(Attributes v)
@@ -110,7 +128,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
     #endif
     return o;
    }
-   half4 ShadowFragment(Varyings v):SV_Target{LeafSample(v.uv);return 0;}
+   half4 ShadowFragment(Varyings v):SV_Target{LeafSampleFade(v);return 0;}
    ENDHLSL
   }
   Pass
@@ -121,7 +139,8 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
    #pragma vertex FoliageVertex
    #pragma fragment DepthFragment
    #pragma multi_compile_instancing
-   half4 DepthFragment(Varyings v):SV_Target{LeafSample(v.uv);return 0;}
+   #pragma multi_compile _ LOD_FADE_CROSSFADE
+   half4 DepthFragment(Varyings v):SV_Target{LeafSampleFade(v);return 0;}
    ENDHLSL
   }
   Pass
@@ -132,10 +151,11 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
    #pragma vertex FoliageVertex
    #pragma fragment NormalsFragment
    #pragma multi_compile_instancing
+   #pragma multi_compile _ LOD_FADE_CROSSFADE
    #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
    half4 NormalsFragment(Varyings v,FRONT_FACE_TYPE face:FRONT_FACE_SEMANTIC):SV_Target
    {
-    LeafSample(v.uv);half3 n=LeafNormal(v,IS_FRONT_VFACE(face,1.0h,-1.0h));
+    LeafSampleFade(v);half3 n=LeafNormal(v,IS_FRONT_VFACE(face,1.0h,-1.0h));
     #if defined(_GBUFFER_NORMALS_OCT)
      float2 oct=PackNormalOctQuadEncode(n);return half4(PackFloat2To888(saturate(oct*.5+.5)),0);
     #else
