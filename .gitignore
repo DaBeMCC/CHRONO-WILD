@@ -55,3 +55,9 @@ desktop.ini
 
 # Documentación local del equipo (no se versiona)
 /[Dd]ocs/
+
+# Fuentes de arte; solo las versiones optimizadas entran en Assets.
+/ArtSource/
+
+# Caché del pipeline de texturas.
+__pycache__/
