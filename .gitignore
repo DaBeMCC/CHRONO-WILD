@@ -8,6 +8,8 @@
 /[Uu]ser[Ss]ettings/
 /[Mm]emoryCaptures/
 /[Rr]ecordings/
+/[Ee]xported[Oo]bj/
+.utmp/
 /Assets/Plugins/Editor/JetBrains*
 /Assets/AssetStoreTools*
 
@@ -46,3 +48,7 @@ crashlytics-build.properties
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Copias locales del generador de terreno y exportaciones regenerables
+/[Bb]ackups/
+/[Ee]xports/
