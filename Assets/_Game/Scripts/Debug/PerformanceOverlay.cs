@@ -8,8 +8,8 @@ using UnityEngine.Profiling;
 namespace ChronoWild.Diagnostics
 {
     /// <summary>
-    /// Overlay de depuración: FPS medio/mínimo, memoria, posición, POI más cercano y cronómetro
-    /// de recorrido. F1 lo oculta. Pensado para medir en el equipo de pruebas, no para el juego final.
+    /// Debug overlay: average/minimum FPS, memory, position, nearest POI and route timer.
+    /// F1 hides it. Meant for measuring on the test machine, not for the final game.
     /// </summary>
     public class PerformanceOverlay : MonoBehaviour
     {
@@ -58,17 +58,17 @@ namespace ChronoWild.Diagnostics
                 style = new GUIStyle(GUI.skin.box) { alignment = TextAnchor.UpperLeft, fontSize = 14, richText = false };
 
             text.Clear();
-            text.AppendFormat("FPS {0:0} (mín {1:0})  {2:0.0} ms\n", avgFps, minFps, avgFps > 0 ? 1000f / avgFps : 0f);
-            text.AppendFormat("Memoria: {0:0} MB asignada / {1:0} MB reservada\n",
+            text.AppendFormat("FPS {0:0} (min {1:0})  {2:0.0} ms\n", avgFps, minFps, avgFps > 0 ? 1000f / avgFps : 0f);
+            text.AppendFormat("Memory: {0:0} MB allocated / {1:0} MB reserved\n",
                 Profiler.GetTotalAllocatedMemoryLong() / 1048576f, Profiler.GetTotalReservedMemoryLong() / 1048576f);
-            text.AppendFormat("Resolución: {0}x{1}  Calidad: {2}\n", Screen.width, Screen.height, QualitySettings.names[QualitySettings.GetQualityLevel()]);
+            text.AppendFormat("Resolution: {0}x{1}  Quality: {2}\n", Screen.width, Screen.height, QualitySettings.names[QualitySettings.GetQualityLevel()]);
 
             if (player != null)
             {
                 Vector3 p = player.transform.position;
-                text.AppendFormat("Pos: {0:0} {1:0.0} {2:0}  Pendiente: {3:0}°\n", p.x, p.y, p.z, player.GroundSlope);
-                text.AppendFormat("Recorrido: {0:0} m en {1:0.0} s ({2})  [T reinicia]\n",
-                    player.DistanceTravelled, player.TimerSeconds, player.IsRunning ? "corriendo" : "caminando");
+                text.AppendFormat("Pos: {0:0} {1:0.0} {2:0}  Slope: {3:0}°\n", p.x, p.y, p.z, player.GroundSlope);
+                text.AppendFormat("Route: {0:0} m in {1:0.0} s ({2})  [T resets]\n",
+                    player.DistanceTravelled, player.TimerSeconds, player.IsRunning ? "running" : "walking");
                 AppendNearestPoi(p);
             }
 
@@ -92,7 +92,7 @@ namespace ChronoWild.Diagnostics
                 }
             }
             if (nearest != null)
-                text.AppendFormat("POI cercano: {0} a {1:0} m\n", nearest.displayName, best);
+                text.AppendFormat("Nearest POI: {0} at {1:0} m\n", nearest.displayName, best);
         }
     }
 }

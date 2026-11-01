@@ -3,8 +3,8 @@ using UnityEngine;
 namespace ChronoWild.World
 {
     /// <summary>
-    /// Marcador de punto de interés en la escena de gameplay. El generador los crea desde
-    /// IslandTerrainSettings y puede leer de vuelta su posición si se mueven a mano.
+    /// Point-of-interest marker in the gameplay scene. The generator creates them from
+    /// IslandTerrainSettings and can read their positions back if they are moved by hand.
     /// </summary>
     public class PointOfInterest : MonoBehaviour
     {

@@ -6,10 +6,10 @@ using Layer = ChronoWild.Editor.Terrain.PlaceholderAssetFactory.Layer;
 namespace ChronoWild.Editor.Terrain
 {
     /// <summary>
-    /// Reparte superficies (alphamaps) y vegetación provisional sobre un TerrainData ya esculpido.
-    /// Reglas de superficie: altitud, pendiente, máscara de playa (proximidad a la costa sur),
-    /// humedad (ruido + zonas bajas) y máscara de caminos. Los umbrales se perturban con ruido
-    /// para que las transiciones no sean líneas de nivel perfectas.
+    /// Distributes surfaces (alphamaps) and placeholder vegetation over an already sculpted TerrainData.
+    /// Surface rules: altitude, slope, beach mask (proximity to the south coast),
+    /// moisture (noise + low areas) and path mask. Thresholds are perturbed with noise
+    /// so transitions are not perfect contour lines.
     /// </summary>
     public static class IslandSurfacePainter
     {
@@ -65,7 +65,7 @@ namespace ChronoWild.Editor.Terrain
             return maps;
         }
 
-        /// <summary>Superpone una capa con cierta cobertura, reduciendo el resto proporcionalmente.</summary>
+        /// <summary>Overlays a layer with a given coverage, scaling the rest down proportionally.</summary>
         static void Overlay(float[] w, Layer layer, float amount)
         {
             amount = Mathf.Clamp01(amount);
@@ -74,7 +74,7 @@ namespace ChronoWild.Editor.Terrain
             w[(int)layer] += amount;
         }
 
-        /// <summary>Densidad 0..1 del bosque: masa central con racimos y claros naturales.</summary>
+        /// <summary>Forest density 0..1: central mass with clusters and natural clearings.</summary>
         public static float ForestDensity(IslandTerrainSettings s, in IslandNoise n, Vector2 p)
         {
             float core = 1f - IslandNoise.Smooth01(((p - s.forestCenter).magnitude / Mathf.Max(0.01f, s.forestRadius) - 0.55f) / 0.45f);
@@ -93,7 +93,7 @@ namespace ChronoWild.Editor.Terrain
             {
                 for (int cx = 0; cx < cells && trees.Count < s.maxTrees; cx++)
                 {
-                    // Rejilla con jitter: reparto natural sin solapes groseros.
+                    // Jittered grid: natural spread without gross overlaps.
                     float xm = (cx + 0.15f + 0.7f * (float)rng.NextDouble()) * s.treeSpacing;
                     float zm = (cz + 0.15f + 0.7f * (float)rng.NextDouble()) * s.treeSpacing;
                     float roll = (float)rng.NextDouble();
@@ -116,7 +116,7 @@ namespace ChronoWild.Editor.Terrain
                     if (InClearing(s, xm, zm))
                         continue;
 
-                    // Especies: cícadas en bordes y zonas bajas, coníferas en altura, ginkgos mezclados.
+                    // Species: cycads on edges and low areas, conifers at altitude, ginkgos mixed in.
                     int proto;
                     if (h > 28f || speciesRoll < 0.45f) proto = 0;
                     else if (speciesRoll < 0.75f || density > 0.7f) proto = 1;

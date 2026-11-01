@@ -5,12 +5,12 @@ using UnityEngine;
 namespace ChronoWild.Editor.Terrain
 {
     /// <summary>
-    /// Genera el heightmap por capas:
-    /// 1) forma de isla con costa deformada (domain warping moderado),
-    /// 2) perfil costero: playa suave al sur, acantilados al noreste,
-    /// 3) relieve interior: fBm de detalle + rasgos diseñados (monte, colinas, valle),
-    /// 4) áreas planas, 5) suavizado, 6) caminos tallados sobre splines.
-    /// Las alturas se expresan en metros respecto al nivel del mar, indexadas [z, x].
+    /// Generates the heightmap in layers:
+    /// 1) island shape with a deformed coastline (moderate domain warping),
+    /// 2) coastal profile: gentle beach to the south, cliffs to the northeast,
+    /// 3) inland relief: detail fBm + designed features (mountain, hills, valley),
+    /// 4) flat areas, 5) smoothing, 6) paths carved along splines.
+    /// Heights are in meters relative to sea level, indexed [z, x].
     /// </summary>
     public static class IslandHeightGenerator
     {
@@ -74,7 +74,7 @@ namespace ChronoWild.Editor.Terrain
         {
             var center = new Vector2(0.5f, 0.5f);
 
-            // Capa 1: forma de isla. La costa se deforma desplazando el punto de muestreo.
+            // Layer 1: island shape. The coastline is deformed by displacing the sample point.
             float f = s.coastWarpFrequency;
             var warp = new Vector2(
                 IslandNoise.Fbm(p * f + n.warpA, 3) - 0.5f,
@@ -85,28 +85,28 @@ namespace ChronoWild.Editor.Terrain
             beachW = IslandNoise.AngleWeight(angle, s.beachDirection, s.beachArc);
             float cliffSector = IslandNoise.AngleWeight(angle, s.cliffDirection, s.cliffArc);
 
-            // Metros tierra adentro desde la línea de costa (negativo = mar).
+            // Meters inland from the coastline (negative = sea).
             float inland = (s.islandRadius - fromCenter.magnitude) * s.terrainSize;
-            // La máscara de acantilado solo cubre la franja costera del sector, no el interior.
+            // The cliff mask only covers the sector's coastal strip, not the interior.
             cliffW = cliffSector * (1f - IslandNoise.Smooth01((Mathf.Abs(inland) - s.cliffWidth * 1.5f) / 8f));
 
             if (inland < 0f)
             {
                 float offshore = s.offshoreSlopeWidth * Mathf.Lerp(1f, 0.35f, cliffSector) * Mathf.Lerp(1f, 1.6f, beachW);
                 float seabed = -s.seaFloorDepth * 0.9f * IslandNoise.Smooth01(-inland / offshore);
-                // Bajo los acantilados el agua se vuelve profunda casi de inmediato.
+                // Below the cliffs the water gets deep almost immediately.
                 float cliffDrop = -s.seaFloorDepth * 0.5f * IslandNoise.Smooth01(-inland / 4f) * cliffSector;
                 return Mathf.Min(seabed, cliffDrop);
             }
 
-            // Capa 2: perfil costero.
+            // Layer 2: coastal profile.
             float beachRamp = s.beachHeight * IslandNoise.Smooth01(inland / Mathf.Max(1f, s.beachWidth));
             float normalRamp = s.inlandBaseHeight * 0.5f * IslandNoise.Smooth01(inland / 15f);
             float coastal = Mathf.Lerp(normalRamp, beachRamp, beachW);
             float cliff = s.cliffHeight * IslandNoise.Smooth01(inland / Mathf.Max(1f, s.cliffWidth));
             coastal = Mathf.Lerp(coastal, cliff, cliffSector);
 
-            // Capa 3: relieve interior, atenuado cerca de la costa para conservar la playa.
+            // Layer 3: inland relief, attenuated near the coast to keep the beach.
             float inlandStart = Mathf.Lerp(10f, s.beachWidth, beachW);
             float inlandMask = IslandNoise.Smooth01((inland - inlandStart) / Mathf.Max(1f, s.inlandRampWidth));
 
@@ -116,7 +116,7 @@ namespace ChronoWild.Editor.Terrain
                 relief += FeatureHeight(feature, p, n);
 
             float h = coastal + inlandMask * relief;
-            // Evita lagunas interiores accidentales: tierra adentro siempre queda algo sobre el mar.
+            // Avoid accidental inland lagoons: inland always stays somewhat above the sea.
             h = Mathf.Max(h, 1.5f * IslandNoise.Smooth01(inland / 20f));
             return h;
         }
@@ -132,7 +132,7 @@ namespace ChronoWild.Editor.Terrain
             if (feature.ridged > 0f)
             {
                 float ridge = IslandNoise.Ridged(p * 7f + n.ridge, 4);
-                // Las crestas pesan más hacia la cima para no ensuciar las faldas.
+                // Crests weigh more toward the summit so they don't clutter the slopes.
                 bump *= Mathf.Lerp(1f, 0.55f + ridge, feature.ridged * bump);
             }
             return feature.height * bump;
@@ -163,7 +163,7 @@ namespace ChronoWild.Editor.Terrain
             }
         }
 
-        /// <summary>Suavizado 3x3 selectivo: no toca los acantilados para que sigan siendo verticales.</summary>
+        /// <summary>Selective 3x3 smoothing: leaves cliffs alone so they stay vertical.</summary>
         static void Smooth(float[,] h, int res, float[,] protect)
         {
             var copy = (float[,])h.Clone();
@@ -213,7 +213,7 @@ namespace ChronoWild.Editor.Terrain
             if (pts.Count < 2)
                 return;
 
-            // Alturas a lo largo del camino, suavizadas longitudinalmente para evitar escalones.
+            // Heights along the path, smoothed lengthwise to avoid steps.
             var original = new float[pts.Count];
             for (int i = 0; i < pts.Count; i++)
                 original[i] = r.SampleHeight(pts[i].x, pts[i].y);
@@ -221,7 +221,7 @@ namespace ChronoWild.Editor.Terrain
             var ph = original;
             for (int pass = 0; pass < 3; pass++)
                 ph = BoxBlur(ph, window);
-            // Los extremos vuelven a la altura existente para empalmar con otros caminos y claros.
+            // Endpoints return to the existing height to join other paths and clearings.
             int pin = Mathf.Min(window * 2, ph.Length / 2);
             for (int i = 0; i < pin; i++)
             {
@@ -279,7 +279,7 @@ namespace ChronoWild.Editor.Terrain
                     if (d > reach)
                         continue;
                     float w = 1f - IslandNoise.Smooth01((d - half) / Mathf.Max(0.01f, path.falloff));
-                    // Sin tallar dentro del mar: el camino termina en la orilla.
+                    // No carving in the sea: the path ends at the shoreline.
                     if (r.heights[z, x] < 0f)
                         continue;
                     r.heights[z, x] = Mathf.Lerp(r.heights[z, x], bestHeight[z, x] - path.carveDepth, w);

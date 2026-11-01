@@ -13,11 +13,11 @@ using UnityEngine.SceneManagement;
 namespace ChronoWild.Editor.Terrain
 {
     /// <summary>
-    /// Monta las dos escenas de la isla:
-    /// - Island_Terrain: terreno, océano, sol y niebla (entorno; lo edita David).
-    /// - Island_Gameplay: POIs, jugador de prueba y cargador del entorno (lo edita Gerardo).
-    /// Solo crea lo que falta; nunca borra objetos añadidos a mano. Antes de tocar una escena
-    /// existente deja una copia en Backups/ (fuera de Assets).
+    /// Builds the two island scenes:
+    /// - Island_Terrain: terrain, ocean, sun and fog (environment; edited by David).
+    /// - Island_Gameplay: POIs, test player and environment loader (edited by Gerardo).
+    /// Only creates what is missing; never deletes objects added by hand. Before touching an
+    /// existing scene it leaves a copy in Backups/ (outside Assets).
     /// </summary>
     public static class IslandSceneBuilder
     {
@@ -89,7 +89,7 @@ namespace ChronoWild.Editor.Terrain
             if (terrain.materialTemplate == null && GraphicsSettings.defaultRenderPipeline != null)
                 terrain.materialTemplate = GraphicsSettings.defaultRenderPipeline.defaultTerrainMaterial;
 
-            // Valores medios; el perfil de calidad baja los ajustará en tiempo de ejecución.
+            // Mid values; the low quality profile will adjust them at runtime.
             terrain.heightmapPixelError = 5f;
             terrain.basemapDistance = 200f;
             terrain.treeDistance = 400f;
@@ -134,7 +134,7 @@ namespace ChronoWild.Editor.Terrain
         }
 
         /// <summary>
-        /// Niebla lineal: oculta el borde del mundo y crea perspectiva aérea a coste casi nulo.
+        /// Linear fog: hides the world edge and adds aerial perspective at almost no cost.
         /// </summary>
         static void ConfigureAtmosphere()
         {
@@ -189,13 +189,13 @@ namespace ChronoWild.Editor.Terrain
             }
         }
 
-        /// <summary>Copia al asset de configuración las posiciones de POIs movidos a mano en la escena.</summary>
+        /// <summary>Copies the positions of POIs moved by hand in the scene back to the settings asset.</summary>
         public static int PullPointsOfInterest(Scene scene, IslandTerrainSettings s)
         {
             var root = FindRoot(scene, PoiRootName);
             if (root == null)
                 return 0;
-            Undo.RecordObject(s, "Leer POIs de la escena");
+            Undo.RecordObject(s, "Read POIs from scene");
             int count = 0;
             foreach (var poi in root.GetComponentsInChildren<PointOfInterest>(true))
             {
@@ -218,7 +218,7 @@ namespace ChronoWild.Editor.Terrain
         static void EnsurePlayer(Scene scene, IslandTerrainSettings s, TerrainData data)
         {
             var spawn = s.pointsOfInterest.FirstOrDefault(p => p.type == PoiType.Spawn);
-            // Margen sobre el suelo: si el terreno se regenera más alto, la cápsula no debe quedar enterrada.
+            // Margin above the ground: if the terrain is regenerated higher, the capsule must not end up buried.
             Vector3 spawnPos = GroundPoint(s, data, spawn != null ? spawn.position : new Vector2(0.5f, 0.2f)) + Vector3.up * 0.5f;
 
             var go = FindRoot(scene, PlayerName);
@@ -231,7 +231,7 @@ namespace ChronoWild.Editor.Terrain
             go = new GameObject(PlayerName);
             SceneManager.MoveGameObjectToScene(go, scene);
             go.transform.position = spawnPos;
-            // Mira tierra adentro (norte) al aparecer.
+            // Face inland (north) on spawn.
             go.transform.rotation = Quaternion.identity;
 
             var cc = go.AddComponent<CharacterController>();
@@ -285,7 +285,7 @@ namespace ChronoWild.Editor.Terrain
                 }
                 case PoiType.Research:
                 {
-                    // Ginkgo monumental: hito visual del bosque y objetivo de investigación.
+                    // Monumental ginkgo: visual landmark of the forest and research goal.
                     var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlaceholderAssetFactory.PrefabsFolder + "/PF_Ginkgo_Placeholder.prefab");
                     if (prefab == null) break;
                     var tree = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
@@ -328,7 +328,7 @@ namespace ChronoWild.Editor.Terrain
             EditorBuildSettings.scenes = scenes.ToArray();
         }
 
-        /// <summary>Copia con fecha en &lt;proyecto&gt;/Backups (no importada por Unity, ignorada por git).</summary>
+        /// <summary>Timestamped copy in &lt;project&gt;/Backups (not imported by Unity, ignored by git).</summary>
         public static void BackupAsset(string assetPath)
         {
             if (!File.Exists(assetPath))

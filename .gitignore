@@ -49,15 +49,20 @@ crashlytics-build.properties
 Thumbs.db
 desktop.ini
 
-# Copias locales del generador de terreno y exportaciones regenerables
+# Local terrain generator backups and regenerable exports
 /[Bb]ackups/
 /[Ee]xports/
 
-# Documentación local del equipo (no se versiona)
+# Local team documentation (not versioned)
 /[Dd]ocs/
 
-# Fuentes de arte; solo las versiones optimizadas entran en Assets.
+# Art sources; only optimized versions go into Assets.
 /ArtSource/
 
-# Caché del pipeline de texturas.
+# Texture pipeline cache.
 __pycache__/
+
+# Local art preparation tools (not versioned)
+/[Tt]ools/
+/Assets/_Game/Editor/Art/
+/Assets/_Game/Editor/Art.meta

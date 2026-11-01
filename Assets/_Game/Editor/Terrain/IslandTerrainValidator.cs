@@ -8,10 +8,10 @@ using UnityEngine;
 namespace ChronoWild.Editor.Terrain
 {
     /// <summary>
-    /// Validación estática del terreno (sin entrar en Play): superficie transitable, pendientes de
-    /// los caminos, tiempos de recorrido, estado de los POIs y porcentaje de isla visible desde
-    /// puntos clave. La visibilidad ignora árboles, así que es una cota superior: la real es menor.
-    /// No mide FPS ni memoria; eso requiere jugar la escena en el equipo objetivo.
+    /// Static terrain validation (without entering Play): walkable surface, path slopes,
+    /// travel times, POI status and percentage of the island visible from key points.
+    /// Visibility ignores trees, so it is an upper bound: the real value is lower.
+    /// Does not measure FPS or memory; that requires playing the scene on the target machine.
     /// </summary>
     public static class IslandTerrainValidator
     {
@@ -25,11 +25,11 @@ namespace ChronoWild.Editor.Terrain
         public static string Validate(IslandTerrainSettings s, TerrainData data)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("# Informe de validación del terreno");
+            sb.AppendLine("# Terrain validation report");
             sb.AppendLine();
-            sb.AppendLine($"- Fecha: {System.DateTime.Now:yyyy-MM-dd HH:mm}");
-            sb.AppendLine($"- Semilla: {s.seed} · Terreno {F(s.terrainSize)} × {F(s.terrainSize)} m · heightmap {data.heightmapResolution}² ({F(s.terrainSize / (data.heightmapResolution - 1), 2)} m/muestra) · rango vertical {F(s.maxHeight)} m");
-            sb.AppendLine($"- Velocidades de referencia: caminar {F(WalkSpeed)} m/s, correr {F(RunSpeed)} m/s (DebugFirstPersonController)");
+            sb.AppendLine($"- Date: {System.DateTime.Now:yyyy-MM-dd HH:mm}");
+            sb.AppendLine($"- Seed: {s.seed} · Terrain {F(s.terrainSize)} × {F(s.terrainSize)} m · heightmap {data.heightmapResolution}² ({F(s.terrainSize / (data.heightmapResolution - 1), 2)} m/sample) · vertical range {F(s.maxHeight)} m");
+            sb.AppendLine($"- Reference speeds: walk {F(WalkSpeed)} m/s, run {F(RunSpeed)} m/s (DebugFirstPersonController)");
             sb.AppendLine();
 
             var heights = ReadHeights(s, data, out int res);
@@ -37,20 +37,20 @@ namespace ChronoWild.Editor.Terrain
             AppendPaths(sb, s, data);
             AppendPois(sb, s, data);
             AppendVisibility(sb, s, heights, res);
-            sb.AppendLine("## Vegetación");
+            sb.AppendLine("## Vegetation");
             sb.AppendLine();
-            sb.AppendLine($"- Árboles: {data.treeInstanceCount} (prototipos: {data.treePrototypes.Length})");
+            sb.AppendLine($"- Trees: {data.treeInstanceCount} (prototypes: {data.treePrototypes.Length})");
             for (int i = 0; i < data.treePrototypes.Length; i++)
             {
                 int count = data.treeInstances.Count(t => t.prototypeIndex == i);
                 sb.AppendLine($"  - {data.treePrototypes[i].prefab?.name}: {count}");
             }
             sb.AppendLine();
-            sb.AppendLine("## Pendiente de validar en Play / equipo objetivo");
+            sb.AppendLine("## Still to validate in Play / on the target machine");
             sb.AppendLine();
-            sb.AppendLine("- FPS y memoria a 720p en calidad baja (usar el overlay de Island_Gameplay; F1 lo oculta).");
-            sb.AppendLine("- Colisiones reales del CharacterController en bordes de caminos y acantilados.");
-            sb.AppendLine("- Visibilidad real con vegetación (este informe ignora los árboles).");
+            sb.AppendLine("- FPS and memory at 720p on low quality (use the Island_Gameplay overlay; F1 hides it).");
+            sb.AppendLine("- Actual CharacterController collisions at path edges and cliffs.");
+            sb.AppendLine("- Actual visibility with vegetation (this report ignores trees).");
             return sb.ToString();
         }
 
@@ -87,21 +87,21 @@ namespace ChronoWild.Editor.Terrain
             }
             float landArea = land * cell * cell;
             float ew = (maxX - minX) * cell, ns = (maxZ - minZ) * cell;
-            sb.AppendLine("## Isla");
+            sb.AppendLine("## Island");
             sb.AppendLine();
-            sb.AppendLine($"- Superficie emergida: {F(landArea / 10000f, 1)} ha ({F(landArea / 1e6f, 3)} km²)");
-            sb.AppendLine($"- Extensión: {F(ew)} m este-oeste × {F(ns)} m norte-sur");
-            sb.AppendLine($"- Altura máxima sobre el mar: {F(maxH, 1)} m");
-            sb.AppendLine($"- Transitable (≤ {F(WalkableSlope)}°): {Pct(walkable, land)} de la tierra · no escalable (> 45°): {Pct(steep, land)}");
-            sb.AppendLine($"- Cruzar la isla de lado a lado (línea recta, la mayor extensión): {F(Mathf.Max(ew, ns) / WalkSpeed)} s caminando / {F(Mathf.Max(ew, ns) / RunSpeed)} s corriendo");
+            sb.AppendLine($"- Land area: {F(landArea / 10000f, 1)} ha ({F(landArea / 1e6f, 3)} km²)");
+            sb.AppendLine($"- Extent: {F(ew)} m east-west × {F(ns)} m north-south");
+            sb.AppendLine($"- Maximum height above sea: {F(maxH, 1)} m");
+            sb.AppendLine($"- Walkable (≤ {F(WalkableSlope)}°): {Pct(walkable, land)} of land · unclimbable (> 45°): {Pct(steep, land)}");
+            sb.AppendLine($"- Crossing the island side to side (straight line, longest extent): {F(Mathf.Max(ew, ns) / WalkSpeed)} s walking / {F(Mathf.Max(ew, ns) / RunSpeed)} s running");
             sb.AppendLine();
         }
 
         static void AppendPaths(StringBuilder sb, IslandTerrainSettings s, TerrainData data)
         {
-            sb.AppendLine("## Caminos");
+            sb.AppendLine("## Paths");
             sb.AppendLine();
-            sb.AppendLine("| Camino | Longitud | Desnivel + / − | Pendiente máx. | Tramo > 15° | Tramo > 25° | Caminando | Corriendo |");
+            sb.AppendLine("| Path | Length | Elevation + / − | Max slope | Stretch > 15° | Stretch > 25° | Walking | Running |");
             sb.AppendLine("|---|---|---|---|---|---|---|---|");
             foreach (var path in s.paths)
             {
@@ -127,15 +127,15 @@ namespace ChronoWild.Editor.Terrain
                 sb.AppendLine($"| {path.name} | {F(length)} m | {F(up)} / {F(down)} m | {F(maxSlope, 1)}° | {F(over15)} m | {F(over25)} m | {Time(length / WalkSpeed)} | {Time(length / RunSpeed)} |");
             }
             sb.AppendLine();
-            sb.AppendLine("Pendiente medida en ventanas de 4 m sobre el eje del camino. El CharacterController de prueba sube hasta 45°.");
+            sb.AppendLine("Slope measured over 4 m windows along the path axis. The test CharacterController climbs up to 45°.");
             sb.AppendLine();
         }
 
         static void AppendPois(StringBuilder sb, IslandTerrainSettings s, TerrainData data)
         {
-            sb.AppendLine("## Puntos de interés");
+            sb.AppendLine("## Points of interest");
             sb.AppendLine();
-            sb.AppendLine("| Id | Nombre | Tipo | Posición (m) | Altura | Pendiente | Distancia al spawn | Aviso |");
+            sb.AppendLine("| Id | Name | Type | Position (m) | Height | Slope | Distance to spawn | Warning |");
             sb.AppendLine("|---|---|---|---|---|---|---|---|");
             var spawn = s.pointsOfInterest.FirstOrDefault(p => p.type == PoiType.Spawn);
             foreach (var poi in s.pointsOfInterest)
@@ -144,9 +144,9 @@ namespace ChronoWild.Editor.Terrain
                 float slope = data.GetSteepness(poi.position.x, poi.position.y);
                 float dist = spawn != null ? Vector2.Distance(poi.position, spawn.position) * s.terrainSize : 0f;
                 var warnings = new List<string>();
-                if (pos.y < 0.3f) warnings.Add("bajo el agua");
-                if (slope > 25f && poi.type != PoiType.Landmark) warnings.Add("pendiente alta");
-                if (poi.type == PoiType.BuildZone && slope > 12f) warnings.Add("poco plano para construir");
+                if (pos.y < 0.3f) warnings.Add("underwater");
+                if (slope > 25f && poi.type != PoiType.Landmark) warnings.Add("steep slope");
+                if (poi.type == PoiType.BuildZone && slope > 12f) warnings.Add("too uneven to build on");
                 sb.AppendLine($"| {poi.id} | {poi.displayName} | {poi.type} | ({F(pos.x)}, {F(pos.z)}) | {F(pos.y, 1)} m | {F(slope, 1)}° | {F(dist)} m | {string.Join(", ", warnings)} |");
             }
             sb.AppendLine();
@@ -154,11 +154,11 @@ namespace ChronoWild.Editor.Terrain
 
         static void AppendVisibility(StringBuilder sb, IslandTerrainSettings s, float[,] h, int res)
         {
-            sb.AppendLine("## Revelación progresiva: % de tierra visible");
+            sb.AppendLine("## Progressive reveal: % of land visible");
             sb.AppendLine();
-            sb.AppendLine("Línea de visión desde la altura de los ojos contra el relieve (sin árboles ni niebla). Cuanto menor, más se revela al explorar.");
+            sb.AppendLine("Line of sight from eye height against the relief (no trees or fog). The lower it is, the more exploring reveals.");
             sb.AppendLine();
-            sb.AppendLine("| Desde | % de tierra visible | Portal visible | Monte Cronos visible |");
+            sb.AppendLine("| From | % of land visible | Portal visible | Mount Cronos visible |");
             sb.AppendLine("|---|---|---|---|");
 
             const int grid = 96;
@@ -210,7 +210,7 @@ namespace ChronoWild.Editor.Terrain
 
         static string F(float v, int decimals = 0) => v.ToString(decimals == 0 ? "0" : "0." + new string('0', decimals), Inv);
         static string Pct(int a, int b) => b == 0 ? "—" : (100f * a / b).ToString("0.0", Inv) + " %";
-        static string YesNo(bool b) => b ? "sí" : "no";
+        static string YesNo(bool b) => b ? "yes" : "no";
         static string Time(float seconds) => seconds < 60f ? $"{F(seconds)} s" : $"{(int)(seconds / 60)} min {F(seconds % 60f)} s";
     }
 }

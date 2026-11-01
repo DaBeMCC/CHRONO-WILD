@@ -6,9 +6,9 @@ using UnityEngine.Rendering;
 namespace ChronoWild.Editor.Terrain
 {
     /// <summary>
-    /// Crea los assets provisionales de la primera prueba: Terrain Layers de color con algo de
-    /// ruido, árboles de primitivas con LOD Group y materiales URP simples. Se reemplazarán por
-    /// arte final cuando la escala y los recorridos estén aprobados.
+    /// Creates the placeholder assets for the first pass: colored Terrain Layers with some
+    /// noise, primitive trees with a LOD Group and simple URP materials. They will be replaced
+    /// by final art once scale and travel routes are approved.
     /// </summary>
     public static class PlaceholderAssetFactory
     {
@@ -75,7 +75,7 @@ namespace ChronoWild.Editor.Terrain
             {
                 for (int x = 0; x < size; x++)
                 {
-                    // Ruido periódico (dominio toroidal) para que la textura sea tileable.
+                    // Periodic noise (toroidal domain) so the texture tiles.
                     float u = x / (float)size * Mathf.PI * 2f, v = y / (float)size * Mathf.PI * 2f;
                     float n = Mathf.PerlinNoise(Mathf.Cos(u) * 2f + salt * 10f, Mathf.Sin(u) * 2f + Mathf.Cos(v) * 2f)
                             * 0.6f + Mathf.PerlinNoise(Mathf.Sin(v) * 6f + salt, Mathf.Cos(u) * 6f) * 0.4f;
@@ -107,7 +107,7 @@ namespace ChronoWild.Editor.Terrain
             return mat;
         }
 
-        /// <summary>Agua provisional: URP Lit transparente. El shader económico definitivo llega en la fase de agua.</summary>
+        /// <summary>Placeholder water: transparent URP Lit. The final cheap shader comes in the water phase.</summary>
         public static Material EnsureWaterMaterial()
         {
             EnsureFolder(MaterialsFolder);
@@ -151,7 +151,7 @@ namespace ChronoWild.Editor.Terrain
             var root = new GameObject(name);
             build(root);
 
-            // Solo el tronco colisiona; las copas no necesitan collider.
+            // Only the trunk collides; canopies don't need a collider.
             foreach (var c in root.GetComponentsInChildren<Collider>())
                 Object.DestroyImmediate(c);
             var renderers = root.GetComponentsInChildren<Renderer>();
@@ -227,7 +227,7 @@ namespace ChronoWild.Editor.Terrain
             go.AddComponent<MeshRenderer>().sharedMaterial = mat;
         }
 
-        /// <summary>Cono unitario (radio 0.5, altura 1, base en y = 0) con 10 lados: barato y suficiente a distancia.</summary>
+        /// <summary>Unit cone (radius 0.5, height 1, base at y = 0) with 10 sides: cheap and enough at a distance.</summary>
         static Mesh EnsureConeMesh()
         {
             EnsureFolder(MeshesFolder);

@@ -9,12 +9,12 @@ using UnityEngine.SceneManagement;
 namespace ChronoWild.Editor
 {
     /// <summary>
-    /// Herramienta de editor para generar la isla. El terreno se genera aquí y se guarda como
-    /// asset; el juego nunca lo regenera en tiempo de ejecución.
+    /// Editor tool that generates the island. The terrain is generated here and saved as an
+    /// asset; the game never regenerates it at runtime.
     ///
-    /// Conservación de cambios manuales: cada generación guarda la altura "base" generada en
-    /// Island_HeightBaseline.bytes. Al regenerar con "Conservar retoques manuales", la diferencia
-    /// entre el terreno actual y esa base (lo esculpido a mano) se vuelve a sumar al nuevo relieve.
+    /// Preserving manual edits: every generation stores the generated "base" height in
+    /// Island_HeightBaseline.bytes. When regenerating with "Preserve manual edits", the difference
+    /// between the current terrain and that base (what was sculpted by hand) is added back onto the new relief.
     /// </summary>
     public class ChronoWildTerrainGenerator : EditorWindow
     {
@@ -33,8 +33,8 @@ namespace ChronoWild.Editor
         bool paintSurfaces = true;
         bool placeTrees = true;
 
-        [MenuItem("CHRONO WILD/Generador de terreno")]
-        public static void Open() => GetWindow<ChronoWildTerrainGenerator>("Generador de isla");
+        [MenuItem("CHRONO WILD/Terrain Generator")]
+        public static void Open() => GetWindow<ChronoWildTerrainGenerator>("Island Generator");
 
         void OnEnable()
         {
@@ -50,25 +50,25 @@ namespace ChronoWild.Editor
         void OnGUI()
         {
             scroll = EditorGUILayout.BeginScrollView(scroll);
-            settings = (IslandTerrainSettings)EditorGUILayout.ObjectField("Configuración", settings, typeof(IslandTerrainSettings), false);
+            settings = (IslandTerrainSettings)EditorGUILayout.ObjectField("Settings", settings, typeof(IslandTerrainSettings), false);
             if (settings == null)
             {
-                if (GUILayout.Button("Crear configuración por defecto"))
+                if (GUILayout.Button("Create default settings"))
                     settings = LoadOrCreateSettings();
                 EditorGUILayout.EndScrollView();
                 return;
             }
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Generación", EditorStyles.boldLabel);
-            preserveManualEdits = EditorGUILayout.ToggleLeft("Conservar retoques manuales de altura", preserveManualEdits);
-            paintSurfaces = EditorGUILayout.ToggleLeft("Repintar superficies (sobrescribe el pintado manual)", paintSurfaces);
-            placeTrees = EditorGUILayout.ToggleLeft("Recolocar vegetación provisional", placeTrees);
+            EditorGUILayout.LabelField("Generation", EditorStyles.boldLabel);
+            preserveManualEdits = EditorGUILayout.ToggleLeft("Preserve manual height edits", preserveManualEdits);
+            paintSurfaces = EditorGUILayout.ToggleLeft("Repaint surfaces (overwrites manual painting)", paintSurfaces);
+            placeTrees = EditorGUILayout.ToggleLeft("Re-place placeholder vegetation", placeTrees);
 
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("Previsualizar")) RefreshPreview();
-                if (GUILayout.Button("Generar / actualizar TerrainData"))
+                if (GUILayout.Button("Preview")) RefreshPreview();
+                if (GUILayout.Button("Generate / update TerrainData"))
                 {
                     GenerateTerrainData(settings, preserveManualEdits, paintSurfaces, placeTrees);
                     RefreshPreview();
@@ -76,29 +76,29 @@ namespace ChronoWild.Editor
             }
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("Construir / actualizar escenas") && EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                if (GUILayout.Button("Build / update scenes") && EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                     BuildScenes(settings);
-                if (GUILayout.Button("Validar")) lastReport = Validate(settings);
+                if (GUILayout.Button("Validate")) lastReport = Validate(settings);
             }
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("POIs: escena ← configuración")) SyncPois(settings);
-                if (GUILayout.Button("POIs: configuración ← escena")) PullPois(settings);
-                if (GUILayout.Button("Exportar máscaras PNG")) ExportMasks();
+                if (GUILayout.Button("POIs: scene ← settings")) SyncPois(settings);
+                if (GUILayout.Button("POIs: settings ← scene")) PullPois(settings);
+                if (GUILayout.Button("Export PNG masks")) ExportMasks();
             }
 
             if (preview != null)
             {
                 float side = Mathf.Min(position.width - 20f, 384f);
                 GUILayout.Label(preview, GUILayout.Width(side), GUILayout.Height(side));
-                EditorGUILayout.HelpBox("Azul: mar · arena · verde: tierra (más oscuro = bosque) · gris: roca alta · marrón: caminos · puntos: POIs", MessageType.None);
+                EditorGUILayout.HelpBox("Blue: sea · sand · green: land (darker = forest) · gray: high rock · brown: paths · dots: POIs", MessageType.None);
             }
 
             if (!string.IsNullOrEmpty(lastReport))
                 EditorGUILayout.TextArea(lastReport, GUILayout.MinHeight(160));
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Parámetros", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Parameters", EditorStyles.boldLabel);
             UnityEditor.Editor.CreateCachedEditor(settings, null, ref settingsEditor);
             settingsEditor.OnInspectorGUI();
             EditorGUILayout.EndScrollView();
@@ -131,13 +131,13 @@ namespace ChronoWild.Editor
                 data = new TerrainData();
                 AssetDatabase.CreateAsset(data, TerrainDataPath);
             }
-            Undo.RegisterCompleteObjectUndo(data, "Generar terreno de la isla");
+            Undo.RegisterCompleteObjectUndo(data, "Generate island terrain");
 
             float[,] manualDelta = null;
             if (preserveManualEdits && data.heightmapResolution == res && File.Exists(BaselinePath))
                 manualDelta = ComputeManualDelta(data, res);
 
-            // El orden importa: cambiar la resolución reinicia el tamaño.
+            // Order matters: changing the resolution resets the size.
             data.heightmapResolution = res;
             data.size = new Vector3(s.terrainSize, s.maxHeight, s.terrainSize);
             data.alphamapResolution = s.alphamapResolution;
@@ -175,7 +175,7 @@ namespace ChronoWild.Editor
 
             EditorUtility.SetDirty(data);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[CHRONO WILD] Terreno generado (semilla {s.seed}, {res}², {data.treeInstanceCount} árboles, retoques manuales {(manualDelta != null ? "conservados" : "no aplicados")}) en {timer.ElapsedMilliseconds} ms");
+            Debug.Log($"[CHRONO WILD] Terrain generated (seed {s.seed}, {res}², {data.treeInstanceCount} trees, manual edits {(manualDelta != null ? "preserved" : "not applied")}) in {timer.ElapsedMilliseconds} ms");
             return data;
         }
 
@@ -212,11 +212,11 @@ namespace ChronoWild.Editor
         {
             var data = AssetDatabase.LoadAssetAtPath<TerrainData>(TerrainDataPath);
             if (data == null)
-                return "No hay TerrainData generado todavía.";
+                return "No TerrainData has been generated yet.";
             string report = IslandTerrainValidator.Validate(s, data);
             Directory.CreateDirectory(Path.GetDirectoryName(ReportPath));
             File.WriteAllText(ReportPath, report);
-            Debug.Log($"[CHRONO WILD] Informe de validación escrito en {ReportPath}");
+            Debug.Log($"[CHRONO WILD] Validation report written to {ReportPath}");
             return report;
         }
 
@@ -226,7 +226,7 @@ namespace ChronoWild.Editor
             var data = AssetDatabase.LoadAssetAtPath<TerrainData>(TerrainDataPath);
             if (!scene.isLoaded || data == null)
             {
-                EditorUtility.DisplayDialog("POIs", "Abre Island_Gameplay y genera el terreno primero.", "OK");
+                EditorUtility.DisplayDialog("POIs", "Open Island_Gameplay and generate the terrain first.", "OK");
                 return;
             }
             IslandSceneBuilder.SyncPointsOfInterest(scene, s, data);
@@ -238,12 +238,12 @@ namespace ChronoWild.Editor
             var scene = SceneManager.GetSceneByPath(IslandSceneBuilder.GameplayScenePath);
             if (!scene.isLoaded)
             {
-                EditorUtility.DisplayDialog("POIs", "Abre Island_Gameplay primero.", "OK");
+                EditorUtility.DisplayDialog("POIs", "Open Island_Gameplay first.", "OK");
                 return;
             }
             int count = IslandSceneBuilder.PullPointsOfInterest(scene, s);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[CHRONO WILD] {count} POIs copiados de la escena a la configuración.");
+            Debug.Log($"[CHRONO WILD] {count} POIs copied from the scene to the settings.");
         }
 
         static void ExportMasks()
@@ -254,7 +254,7 @@ namespace ChronoWild.Editor
             var textures = data.alphamapTextures;
             for (int i = 0; i < textures.Length; i++)
             {
-                // Cada splatmap RGBA guarda 4 capas en el orden de data.terrainLayers.
+                // Each RGBA splatmap stores 4 layers in data.terrainLayers order.
                 var readable = new Texture2D(textures[i].width, textures[i].height, TextureFormat.RGBA32, false);
                 var rt = RenderTexture.GetTemporary(textures[i].width, textures[i].height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
                 Graphics.Blit(textures[i], rt);
@@ -266,7 +266,7 @@ namespace ChronoWild.Editor
                 File.WriteAllBytes($"{MaskExportFolder}/Island_Splat{i}.png", readable.EncodeToPNG());
                 DestroyImmediate(readable);
             }
-            Debug.Log($"[CHRONO WILD] {textures.Length} splatmaps exportados a {MaskExportFolder}");
+            Debug.Log($"[CHRONO WILD] {textures.Length} splatmaps exported to {MaskExportFolder}");
         }
 
         void RefreshPreview()
@@ -321,7 +321,7 @@ namespace ChronoWild.Editor
             return tex;
         }
 
-        [MenuItem("CHRONO WILD/Terreno/Generar todo (terreno + escenas + validación)")]
+        [MenuItem("CHRONO WILD/Terrain/Generate All (terrain + scenes + validation)")]
         public static void GenerateAll()
         {
             if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -332,7 +332,7 @@ namespace ChronoWild.Editor
             Validate(s);
         }
 
-        /// <summary>Guarda la previsualización como PNG (útil para revisar el layout fuera de Unity).</summary>
+        /// <summary>Saves the preview as a PNG (handy for reviewing the layout outside Unity).</summary>
         public static void SavePreviewPng(string path, int res = 513)
         {
             var tex = BuildPreview(LoadOrCreateSettings(), res);

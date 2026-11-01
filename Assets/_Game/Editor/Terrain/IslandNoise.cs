@@ -3,8 +3,8 @@ using UnityEngine;
 namespace ChronoWild.Editor.Terrain
 {
     /// <summary>
-    /// Ruido determinista a partir de la semilla. Mathf.PerlinNoise no acepta semilla, así que
-    /// cada capa usa un desplazamiento propio derivado de System.Random(seed).
+    /// Seed-deterministic noise. Mathf.PerlinNoise takes no seed, so
+    /// each layer uses its own offset derived from System.Random(seed).
     /// </summary>
     public readonly struct IslandNoise
     {
@@ -42,7 +42,7 @@ namespace ChronoWild.Editor.Terrain
             return sum / norm;
         }
 
-        /// <summary>Ruido "ridged" 0..1: crestas afiladas para montañas.</summary>
+        /// <summary>"Ridged" noise 0..1: sharp crests for mountains.</summary>
         public static float Ridged(Vector2 p, int octaves)
         {
             float sum = 0f, amp = 0.5f, norm = 0f;
@@ -63,7 +63,7 @@ namespace ChronoWild.Editor.Terrain
             return x * x * (3f - 2f * x);
         }
 
-        /// <summary>1 dentro del arco angular, 0 fuera, con transición suave en el 40% exterior.</summary>
+        /// <summary>1 inside the angular arc, 0 outside, with a smooth blend over the outer 40%.</summary>
         public static float AngleWeight(float angleDeg, float centerDeg, float arcDeg)
         {
             float delta = Mathf.Abs(Mathf.DeltaAngle(angleDeg, centerDeg));

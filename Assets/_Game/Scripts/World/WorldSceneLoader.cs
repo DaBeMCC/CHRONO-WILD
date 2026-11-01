@@ -4,14 +4,14 @@ using UnityEngine.SceneManagement;
 namespace ChronoWild.World
 {
     /// <summary>
-    /// Vive en la escena de gameplay y carga la escena de entorno (terreno, agua, luz) de forma
-    /// aditiva si no está ya abierta. Permite que terreno y gameplay se editen por separado.
+    /// Lives in the gameplay scene and additively loads the environment scene (terrain, water, light)
+    /// if it is not already open. Lets terrain and gameplay be edited separately.
     /// </summary>
     [DefaultExecutionOrder(-1000)]
     public class WorldSceneLoader : MonoBehaviour
     {
         [SerializeField] string environmentScene = "Island_Terrain";
-        [Tooltip("La escena de entorno aporta luz, niebla y skybox, así que se marca como activa.")]
+        [Tooltip("The environment scene provides light, fog and skybox, so it is marked as active.")]
         [SerializeField] bool makeEnvironmentActive = true;
 
         void Awake()

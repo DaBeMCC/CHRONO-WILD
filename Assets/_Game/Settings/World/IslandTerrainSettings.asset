@@ -37,66 +37,66 @@ MonoBehaviour:
   detailOctaves: 4
   smoothingPasses: 1
   reliefFeatures:
-  - name: Monte Cronos (hito)
+  - name: Mount Cronos (landmark)
     center: {x: 0.66, y: 0.7}
     radius: 0.14
     height: 66
     ridged: 0.55
-  - name: Colina Oeste
+  - name: West Hill
     center: {x: 0.22, y: 0.45}
     radius: 0.09
     height: 20
     ridged: 0.2
-  - name: Cresta del Valle (oculta el valle)
+  - name: Valley Ridge (hides the valley)
     center: {x: 0.41, y: 0.51}
     radius: 0.07
     height: 15
     ridged: 0.3
-  - name: Colinas Este
+  - name: East Hills
     center: {x: 0.77, y: 0.45}
     radius: 0.1
     height: 24
     ridged: 0.3
-  - name: Meseta del Portal
+  - name: Portal Plateau
     center: {x: 0.42, y: 0.76}
     radius: 0.09
     height: 18
     ridged: 0.1
-  - name: Valle Interior
+  - name: Inner Valley
     center: {x: 0.3, y: 0.63}
     radius: 0.1
     height: -4
     ridged: 0
   flatAreas:
-  - name: Playa inicial
+  - name: Starting Beach
     center: {x: 0.5, y: 0.19}
     radius: 18
     falloff: 15
     autoHeight: 1
     height: 0
     treeClearing: 1
-  - name: Claro del campamento
+  - name: Camp Clearing
     center: {x: 0.42, y: 0.29}
     radius: 14
     falloff: 12
     autoHeight: 1
     height: 0
     treeClearing: 1
-  - name: Claro del Ginkgo
+  - name: Ginkgo Clearing
     center: {x: 0.56, y: 0.5}
     radius: 10
     falloff: 10
     autoHeight: 1
     height: 0
     treeClearing: 1
-  - name: Fondo del valle
+  - name: Valley Floor
     center: {x: 0.3, y: 0.63}
     radius: 26
     falloff: 20
     autoHeight: 1
     height: 0
     treeClearing: 1
-  - name: Plataforma del Portal
+  - name: Portal Platform
     center: {x: 0.42, y: 0.76}
     radius: 15
     falloff: 22
@@ -104,7 +104,7 @@ MonoBehaviour:
     height: 0
     treeClearing: 1
   paths:
-  - name: "Ruta principal (playa \u2192 portal)"
+  - name: "Main route (beach \u2192 portal)"
     points:
     - {x: 0.5, y: 0.19}
     - {x: 0.45, y: 0.24}
@@ -123,7 +123,7 @@ MonoBehaviour:
     falloff: 4
     carveDepth: 0.25
     smoothingRadius: 25
-  - name: 'Ruta alternativa: costa oeste'
+  - name: 'Alternate route: west coast'
     points:
     - {x: 0.42, y: 0.29}
     - {x: 0.33, y: 0.31}
@@ -135,7 +135,7 @@ MonoBehaviour:
     falloff: 3
     carveDepth: 0.2
     smoothingRadius: 25
-  - name: 'Ruta alternativa: sendero del monte'
+  - name: 'Alternate route: mountain trail'
     points:
     - {x: 0.56, y: 0.5}
     - {x: 0.62, y: 0.53}
@@ -160,57 +160,57 @@ MonoBehaviour:
   treeScaleRange: {x: 0.8, y: 1.3}
   pointsOfInterest:
   - id: spawn_beach
-    displayName: Playa del naufragio
+    displayName: Shipwreck Beach
     type: 0
     position: {x: 0.5, y: 0.19}
     radius: 4
   - id: res_beach_wood
-    displayName: Troncos a la deriva
+    displayName: Driftwood Logs
     type: 1
     position: {x: 0.56, y: 0.2}
     radius: 6
   - id: res_beach_stone
-    displayName: Rocas de la orilla
+    displayName: Shoreline Rocks
     type: 1
     position: {x: 0.42, y: 0.19}
     radius: 6
   - id: res_fiber
-    displayName: Matorral de fibras
+    displayName: Fiber Thicket
     type: 1
     position: {x: 0.48, y: 0.25}
     radius: 6
   - id: camp
-    displayName: Claro del campamento
+    displayName: Camp Clearing
     type: 2
     position: {x: 0.42, y: 0.29}
     radius: 12
   - id: forest_entrance
-    displayName: Entrada al bosque
+    displayName: Forest Entrance
     type: 8
     position: {x: 0.46, y: 0.36}
     radius: 5
   - id: research_plant
-    displayName: Ginkgo ancestral
+    displayName: Ancient Ginkgo
     type: 3
     position: {x: 0.56, y: 0.5}
     radius: 8
   - id: valley_overlook
-    displayName: Mirador del valle
+    displayName: Valley Overlook
     type: 6
     position: {x: 0.42, y: 0.58}
     radius: 5
   - id: dino_valley
-    displayName: "Valle de los herb\xEDvoros"
+    displayName: Herbivore Valley
     type: 4
     position: {x: 0.3, y: 0.63}
     radius: 30
   - id: mount_cronos
-    displayName: Monte Cronos
+    displayName: Mount Cronos
     type: 5
     position: {x: 0.66, y: 0.7}
     radius: 10
   - id: portal
-    displayName: Portal temporal
+    displayName: Time Portal
     type: 7
     position: {x: 0.42, y: 0.76}
     radius: 8

@@ -4,10 +4,10 @@ using UnityEngine.InputSystem;
 namespace ChronoWild.Player
 {
     /// <summary>
-    /// Controlador en primera persona mínimo para validar escala y recorridos del terreno.
-    /// No es el controlador final del juego: sin stamina, sin interacción, sin nado.
-    /// Teclas: WASD mover, Shift correr, Espacio saltar, T reinicia el cronómetro de recorrido,
-    /// Esc libera el cursor.
+    /// Minimal first-person controller for validating terrain scale and travel routes.
+    /// Not the final game controller: no stamina, no interaction, no swimming.
+    /// Keys: WASD move, Shift run, Space jump, T resets the route timer,
+    /// Esc releases the cursor.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class DebugFirstPersonController : MonoBehaviour
