@@ -1,0 +1,18 @@
+CHRONO WILD - Jurassic wetland material sources
+
+Photographic materials from Poly Haven, CC0:
+https://polyhaven.com/a/forest_ground_04
+https://polyhaven.com/a/forest_leaves_04
+https://polyhaven.com/a/brown_mud_02
+License: https://polyhaven.com/license
+
+Fifteen source maps at 4K were verified against saved Poly Haven file catalogs.
+Source files, URLs and checksums: ArtSource/JurassicWetland/ground_sources.json.
+Albedo and normal maps are exported at 4K. HeightAO JPG channels are
+R=height, G=ambient occlusion, B=roughness. Terrain masks at 2K use
+R=metallic (zero), G=AO, B=height, A=smoothness.
+
+WetlandReflection.exr is an offline capture of the CHRONO WILD review scene.
+New fern, horsetail and ginkgo sapling meshes are original Blender models.
+They represent living/ancient plant groups for an artistic Jurassic study,
+not a certified reconstruction of specific fossil species.
