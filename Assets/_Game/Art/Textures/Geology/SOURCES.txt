@@ -1,0 +1,19 @@
+CHRONO WILD - Geological material sources
+
+Photographic source: Poly Haven, https://polyhaven.com/
+Asset license: CC0 1.0, https://polyhaven.com/license
+License checked on 2026-11-01.
+
+rock_face_03: https://polyhaven.com/a/rock_face_03
+forest_ground_04: https://polyhaven.com/a/forest_ground_04
+sand_01: https://polyhaven.com/a/sand_01
+brown_mud_02: https://polyhaven.com/a/brown_mud_02
+
+RockHigh albedo and normal use the 2K rock_face_03 images. HeightAO packs
+R=displacement, G=ambient occlusion, B=roughness from the corresponding sources.
+Rock source downloads were verified against the saved Poly Haven file catalog.
+Original photography, catalogs, hashes and Blender source files are stored locally
+in ArtSource/Geology and ArtSource/TechArt, outside Assets.
+
+Rock meshes and ground-detail meshes are original CHRONO WILD resources.
+No reference image is redistributed as a game asset.
