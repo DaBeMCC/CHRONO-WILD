@@ -1,0 +1,6 @@
+Moss floor: ambientCG Moss004, CC0 1.0.
+https://ambientcg.com/a/Moss004
+https://docs.ambientcg.com/license/
+4K Color and OpenGL normal; packed 2K terrain mask R=0, G=AO, B=height, A=1-roughness.
+Original downloads and SHA256: ArtSource/MossLighting/, outside Assets.
+The earlier mossy_rock candidate was rejected and is not used.
