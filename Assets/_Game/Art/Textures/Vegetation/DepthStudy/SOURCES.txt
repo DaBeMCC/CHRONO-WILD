@@ -1,0 +1,13 @@
+CHRONO WILD - Close vegetation detail
+
+Moss strand geometry and photographic maps adapted from Moss 01 by Rob Tuytel,
+Poly Haven: https://polyhaven.com/a/moss_01
+Asset license: CC0 1.0, https://polyhaven.com/license
+License and source catalog checked on 2026-11-01.
+Source download hashes are recorded in ArtSource/RealismStudy/moss_01/verified_sources.json.
+Original Blender sources are outside Assets. Patch grouping and LOD exports are prepared
+for CHRONO WILD from the original strand geometry and UVs.
+
+Conifer impostor atlases in the adjacent Impostors folder are rendered from the existing
+CHRONO WILD conifer meshes and their previously documented CC0 photographic materials.
+They are baked views, not new downloaded forest photographs.

@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Moss_Photo
+  m_Shader: {fileID: 4800000, guid: fdf641b05bd381d9f94a8b418adf7f85, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: b997b413717eb22f7b2204f2a3d321d6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: 2a61ff7051a514aa0b68c3480e08b387, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Age: 0.08
+    - _BumpScale: 0.3
+    - _Cutoff: 0.4
+    - _Smoothness: 0.08
+    - _Transmission: 0.08
+    - _Variation: 0.3
+    - _WindStrength: 0
+    m_Colors:
+    - _BaseColor: {r: 1.15, g: 1.2, b: 1.05, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
