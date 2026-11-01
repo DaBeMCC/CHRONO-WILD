@@ -7,15 +7,15 @@ TerrainLayer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: TL_LeafLitter
-  m_DiffuseTexture: {fileID: 2800000, guid: 3edb9ce5a2935bc3caf61d93f2d0af65, type: 3}
-  m_NormalMapTexture: {fileID: 0}
-  m_MaskMapTexture: {fileID: 0}
-  m_TileSize: {x: 6, y: 6}
+  m_DiffuseTexture: {fileID: 2800000, guid: 593a06c1516791496b6cadaace509dde, type: 3}
+  m_NormalMapTexture: {fileID: 2800000, guid: 1aafdd5e126385e1eb5cbc51836b977a, type: 3}
+  m_MaskMapTexture: {fileID: 2800000, guid: 9cf6cb4f5960a4bacb88bd7de010802f, type: 3}
+  m_TileSize: {x: 2.5, y: 2.5}
   m_TileOffset: {x: 0, y: 0}
   m_Specular: {r: 0, g: 0, b: 0, a: 0}
   m_Metallic: 0
-  m_Smoothness: 0.05
-  m_NormalScale: 1
+  m_Smoothness: 1
+  m_NormalScale: 0.65
   m_DiffuseRemapMin: {x: 0, y: 0, z: 0, w: 0}
   m_DiffuseRemapMax: {x: 1, y: 1, z: 1, w: 1}
   m_MaskMapRemapMin: {x: 0, y: 0, z: 0, w: 0}
