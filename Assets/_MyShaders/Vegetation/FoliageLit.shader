@@ -2,14 +2,14 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
 {
  Properties
  {
-  _BaseMap("Albedo y recorte",2D)="white"{}
+  _BaseMap("Albedo and Alpha Cutoff",2D)="white"{}
   _BaseColor("Color",Color)=(1,1,1,1)
   [Normal] _BumpMap("Normal",2D)="bump"{}
-  _BumpScale("Intensidad normal",Range(0,2))=.5
-  _Cutoff("Recorte",Range(0,1))=.4
-  _Smoothness("Suavidad",Range(0,1))=.28
-  _Transmission("Transmisión de hoja",Range(0,1))=.35
-  _WindStrength("Brisa (metros)",Range(0,.3))=.05
+  _BumpScale("Normal Strength",Range(0,2))=.5
+  _Cutoff("Alpha Cutoff",Range(0,1))=.4
+  _Smoothness("Smoothness",Range(0,1))=.28
+  _Transmission("Leaf Transmission",Range(0,1))=.35
+  _WindStrength("Breeze (meters)",Range(0,.3))=.05
  }
  HLSLINCLUDE
  #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"

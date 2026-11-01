@@ -996,7 +996,7 @@ GameObject:
   - component: {fileID: 30681161}
   - component: {fileID: 30681162}
   m_Layer: 0
-  m_Name: Grupo helechos 30
+  m_Name: Fern Cluster 30
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1822,7 +1822,7 @@ GameObject:
   - component: {fileID: 73075540}
   - component: {fileID: 73075539}
   m_Layer: 0
-  m_Name: "Terreno de revisi\xF3n"
+  m_Name: Review Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2169,7 +2169,7 @@ GameObject:
   - component: {fileID: 84486431}
   - component: {fileID: 84486432}
   m_Layer: 0
-  m_Name: Grupo helechos 53
+  m_Name: Fern Cluster 53
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2502,7 +2502,7 @@ GameObject:
   - component: {fileID: 103315591}
   - component: {fileID: 103315592}
   m_Layer: 0
-  m_Name: Grupo helechos 43
+  m_Name: Fern Cluster 43
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2639,7 +2639,7 @@ GameObject:
   - component: {fileID: 114217234}
   - component: {fileID: 114217235}
   m_Layer: 0
-  m_Name: Grupo helechos 21
+  m_Name: Fern Cluster 21
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2956,7 +2956,7 @@ GameObject:
   - component: {fileID: 119061023}
   - component: {fileID: 119061024}
   m_Layer: 0
-  m_Name: Grupo helechos 23
+  m_Name: Fern Cluster 23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3331,7 +3331,7 @@ GameObject:
   - component: {fileID: 137671039}
   - component: {fileID: 137671040}
   m_Layer: 0
-  m_Name: Grupo helechos 102
+  m_Name: Fern Cluster 102
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3394,7 +3394,7 @@ GameObject:
   - component: {fileID: 139924160}
   - component: {fileID: 139924161}
   m_Layer: 0
-  m_Name: Grupo helechos 36
+  m_Name: Fern Cluster 36
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3547,7 +3547,7 @@ GameObject:
   - component: {fileID: 147019210}
   - component: {fileID: 147019211}
   m_Layer: 0
-  m_Name: Grupo helechos 10
+  m_Name: Fern Cluster 10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4118,7 +4118,7 @@ GameObject:
   - component: {fileID: 203452062}
   - component: {fileID: 203452063}
   m_Layer: 0
-  m_Name: Grupo helechos 16
+  m_Name: Fern Cluster 16
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4181,7 +4181,7 @@ GameObject:
   - component: {fileID: 203693422}
   - component: {fileID: 203693423}
   m_Layer: 0
-  m_Name: Grupo helechos 88
+  m_Name: Fern Cluster 88
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5491,7 +5491,7 @@ GameObject:
   - component: {fileID: 259930802}
   - component: {fileID: 259930803}
   m_Layer: 0
-  m_Name: Grupo helechos 67
+  m_Name: Fern Cluster 67
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5898,7 +5898,7 @@ GameObject:
   - component: {fileID: 273591238}
   - component: {fileID: 273591239}
   m_Layer: 0
-  m_Name: Grupo helechos 56
+  m_Name: Fern Cluster 56
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5961,7 +5961,7 @@ GameObject:
   - component: {fileID: 281750832}
   - component: {fileID: 281750833}
   m_Layer: 0
-  m_Name: Grupo helechos 60
+  m_Name: Fern Cluster 60
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6114,7 +6114,7 @@ GameObject:
   - component: {fileID: 288527294}
   - component: {fileID: 288527295}
   m_Layer: 0
-  m_Name: Grupo helechos 22
+  m_Name: Fern Cluster 22
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6758,7 +6758,7 @@ GameObject:
   - component: {fileID: 323021626}
   - component: {fileID: 323021627}
   m_Layer: 0
-  m_Name: Grupo helechos 94
+  m_Name: Fern Cluster 94
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6821,7 +6821,7 @@ GameObject:
   - component: {fileID: 325105905}
   - component: {fileID: 325105906}
   m_Layer: 0
-  m_Name: Grupo helechos 70
+  m_Name: Fern Cluster 70
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6884,7 +6884,7 @@ GameObject:
   - component: {fileID: 327236338}
   - component: {fileID: 327236339}
   m_Layer: 0
-  m_Name: Grupo helechos 26
+  m_Name: Fern Cluster 26
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7037,7 +7037,7 @@ GameObject:
   - component: {fileID: 338780563}
   - component: {fileID: 338780564}
   m_Layer: 0
-  m_Name: Grupo helechos 71
+  m_Name: Fern Cluster 71
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7714,7 +7714,7 @@ GameObject:
   - component: {fileID: 370275749}
   - component: {fileID: 370275750}
   m_Layer: 0
-  m_Name: Grupo helechos 55
+  m_Name: Fern Cluster 55
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8793,7 +8793,7 @@ GameObject:
   - component: {fileID: 412864729}
   - component: {fileID: 412864730}
   m_Layer: 0
-  m_Name: Grupo helechos 39
+  m_Name: Fern Cluster 39
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8856,7 +8856,7 @@ GameObject:
   - component: {fileID: 415544029}
   - component: {fileID: 415544030}
   m_Layer: 0
-  m_Name: Grupo helechos 38
+  m_Name: Fern Cluster 38
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9299,7 +9299,7 @@ GameObject:
   - component: {fileID: 442185856}
   - component: {fileID: 442185857}
   m_Layer: 0
-  m_Name: Grupo helechos 41
+  m_Name: Fern Cluster 41
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9616,7 +9616,7 @@ GameObject:
   - component: {fileID: 473731808}
   - component: {fileID: 473731809}
   m_Layer: 0
-  m_Name: Grupo helechos 6
+  m_Name: Fern Cluster 6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10113,7 +10113,7 @@ GameObject:
   - component: {fileID: 492333999}
   - component: {fileID: 492334000}
   m_Layer: 0
-  m_Name: Grupo helechos 72
+  m_Name: Fern Cluster 72
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10562,7 +10562,7 @@ GameObject:
   - component: {fileID: 515275182}
   - component: {fileID: 515275183}
   m_Layer: 0
-  m_Name: Grupo helechos 61
+  m_Name: Fern Cluster 61
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10731,7 +10731,7 @@ GameObject:
   - component: {fileID: 528064071}
   - component: {fileID: 528064072}
   m_Layer: 0
-  m_Name: Grupo helechos 95
+  m_Name: Fern Cluster 95
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10868,7 +10868,7 @@ GameObject:
   - component: {fileID: 538968393}
   - component: {fileID: 538968394}
   m_Layer: 0
-  m_Name: Grupo helechos 64
+  m_Name: Fern Cluster 64
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11169,7 +11169,7 @@ GameObject:
   - component: {fileID: 555587526}
   - component: {fileID: 555587527}
   m_Layer: 0
-  m_Name: Grupo helechos 48
+  m_Name: Fern Cluster 48
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11232,7 +11232,7 @@ GameObject:
   - component: {fileID: 575031288}
   - component: {fileID: 575031289}
   m_Layer: 0
-  m_Name: Grupo helechos 54
+  m_Name: Fern Cluster 54
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11295,7 +11295,7 @@ GameObject:
   - component: {fileID: 577001957}
   - component: {fileID: 577001958}
   m_Layer: 0
-  m_Name: Grupo helechos 29
+  m_Name: Fern Cluster 29
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13233,7 +13233,7 @@ GameObject:
   - component: {fileID: 657966552}
   - component: {fileID: 657966553}
   m_Layer: 0
-  m_Name: Grupo helechos 100
+  m_Name: Fern Cluster 100
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13296,7 +13296,7 @@ GameObject:
   - component: {fileID: 661072324}
   - component: {fileID: 661072325}
   m_Layer: 0
-  m_Name: Grupo helechos 63
+  m_Name: Fern Cluster 63
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13597,7 +13597,7 @@ GameObject:
   - component: {fileID: 673708101}
   - component: {fileID: 673708102}
   m_Layer: 0
-  m_Name: Grupo helechos 59
+  m_Name: Fern Cluster 59
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13750,7 +13750,7 @@ GameObject:
   - component: {fileID: 681672478}
   - component: {fileID: 681672479}
   m_Layer: 0
-  m_Name: Grupo helechos 40
+  m_Name: Fern Cluster 40
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14263,7 +14263,7 @@ GameObject:
   - component: {fileID: 704326029}
   - component: {fileID: 704326030}
   m_Layer: 0
-  m_Name: Grupo helechos 66
+  m_Name: Fern Cluster 66
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14670,7 +14670,7 @@ GameObject:
   - component: {fileID: 726982038}
   - component: {fileID: 726982039}
   m_Layer: 0
-  m_Name: Grupo helechos 78
+  m_Name: Fern Cluster 78
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15021,7 +15021,7 @@ GameObject:
   - component: {fileID: 743922068}
   - component: {fileID: 743922069}
   m_Layer: 0
-  m_Name: Grupo helechos 12
+  m_Name: Fern Cluster 12
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15592,7 +15592,7 @@ GameObject:
   - component: {fileID: 770278964}
   - component: {fileID: 770278965}
   m_Layer: 0
-  m_Name: Grupo helechos 46
+  m_Name: Fern Cluster 46
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15655,7 +15655,7 @@ GameObject:
   - component: {fileID: 777573874}
   - component: {fileID: 777573875}
   m_Layer: 0
-  m_Name: Grupo helechos 96
+  m_Name: Fern Cluster 96
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15898,7 +15898,7 @@ GameObject:
   - component: {fileID: 793978782}
   - component: {fileID: 793978783}
   m_Layer: 0
-  m_Name: Grupo helechos 19
+  m_Name: Fern Cluster 19
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17072,7 +17072,7 @@ GameObject:
   - component: {fileID: 842843130}
   - component: {fileID: 842843131}
   m_Layer: 0
-  m_Name: Grupo helechos 7
+  m_Name: Fern Cluster 7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17659,7 +17659,7 @@ GameObject:
   - component: {fileID: 858430685}
   - component: {fileID: 858430686}
   m_Layer: 0
-  m_Name: Grupo helechos 24
+  m_Name: Fern Cluster 24
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19294,7 +19294,7 @@ GameObject:
   - component: {fileID: 914215055}
   - component: {fileID: 914215056}
   m_Layer: 0
-  m_Name: Grupo helechos 92
+  m_Name: Fern Cluster 92
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -20577,7 +20577,7 @@ GameObject:
   - component: {fileID: 960494209}
   - component: {fileID: 960494210}
   m_Layer: 0
-  m_Name: Grupo helechos 87
+  m_Name: Fern Cluster 87
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -20952,7 +20952,7 @@ GameObject:
   - component: {fileID: 980906517}
   - component: {fileID: 980906518}
   m_Layer: 0
-  m_Name: Grupo helechos 80
+  m_Name: Fern Cluster 80
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -21809,7 +21809,7 @@ GameObject:
   - component: {fileID: 1012072603}
   - component: {fileID: 1012072604}
   m_Layer: 0
-  m_Name: Grupo helechos 65
+  m_Name: Fern Cluster 65
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22380,7 +22380,7 @@ GameObject:
   - component: {fileID: 1026532689}
   - component: {fileID: 1026532690}
   m_Layer: 0
-  m_Name: Grupo helechos 51
+  m_Name: Fern Cluster 51
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22787,7 +22787,7 @@ GameObject:
   - component: {fileID: 1070236481}
   - component: {fileID: 1070236482}
   m_Layer: 0
-  m_Name: Grupo helechos 44
+  m_Name: Fern Cluster 44
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22940,7 +22940,7 @@ GameObject:
   - component: {fileID: 1076549192}
   - component: {fileID: 1076549193}
   m_Layer: 0
-  m_Name: Grupo helechos 14
+  m_Name: Fern Cluster 14
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23003,7 +23003,7 @@ GameObject:
   - component: {fileID: 1079120145}
   - component: {fileID: 1079120146}
   m_Layer: 0
-  m_Name: Grupo helechos 5
+  m_Name: Fern Cluster 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23876,7 +23876,7 @@ GameObject:
   - component: {fileID: 1106153774}
   - component: {fileID: 1106153775}
   m_Layer: 0
-  m_Name: Grupo helechos 89
+  m_Name: Fern Cluster 89
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -24103,7 +24103,7 @@ GameObject:
   - component: {fileID: 1122167798}
   - component: {fileID: 1122167799}
   m_Layer: 0
-  m_Name: Grupo helechos 50
+  m_Name: Fern Cluster 50
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -24345,7 +24345,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1141792535}
   m_Layer: 0
-  m_Name: 01 Dosel
+  m_Name: 01 Canopy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -24685,7 +24685,7 @@ GameObject:
   - component: {fileID: 1149338315}
   - component: {fileID: 1149338316}
   m_Layer: 0
-  m_Name: Grupo helechos 18
+  m_Name: Fern Cluster 18
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -25182,7 +25182,7 @@ GameObject:
   - component: {fileID: 1180778017}
   - component: {fileID: 1180778018}
   m_Layer: 0
-  m_Name: Grupo helechos 17
+  m_Name: Fern Cluster 17
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -25499,7 +25499,7 @@ GameObject:
   - component: {fileID: 1198130646}
   - component: {fileID: 1198130647}
   m_Layer: 0
-  m_Name: Grupo helechos 47
+  m_Name: Fern Cluster 47
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -25654,7 +25654,7 @@ GameObject:
   - component: {fileID: 1204781500}
   - component: {fileID: 1204781499}
   m_Layer: 0
-  m_Name: "Jugador de revisi\xF3n"
+  m_Name: Review Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26104,7 +26104,7 @@ GameObject:
   - component: {fileID: 1238714548}
   - component: {fileID: 1238714549}
   m_Layer: 0
-  m_Name: Grupo helechos 82
+  m_Name: Fern Cluster 82
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26563,7 +26563,7 @@ GameObject:
   - component: {fileID: 1272319582}
   - component: {fileID: 1272319583}
   m_Layer: 0
-  m_Name: Grupo helechos 68
+  m_Name: Fern Cluster 68
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26970,7 +26970,7 @@ GameObject:
   - component: {fileID: 1308370604}
   - component: {fileID: 1308370605}
   m_Layer: 0
-  m_Name: Grupo helechos 52
+  m_Name: Fern Cluster 52
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27828,7 +27828,7 @@ GameObject:
   - component: {fileID: 1348798073}
   - component: {fileID: 1348798074}
   m_Layer: 0
-  m_Name: Grupo helechos 75
+  m_Name: Fern Cluster 75
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28219,7 +28219,7 @@ GameObject:
   - component: {fileID: 1358047007}
   - component: {fileID: 1358047008}
   m_Layer: 0
-  m_Name: Grupo helechos 33
+  m_Name: Fern Cluster 33
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28536,7 +28536,7 @@ GameObject:
   - component: {fileID: 1370531337}
   - component: {fileID: 1370531338}
   m_Layer: 0
-  m_Name: Grupo helechos 31
+  m_Name: Fern Cluster 31
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28689,7 +28689,7 @@ GameObject:
   - component: {fileID: 1375321709}
   - component: {fileID: 1375321710}
   m_Layer: 0
-  m_Name: Grupo helechos 83
+  m_Name: Fern Cluster 83
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29022,7 +29022,7 @@ GameObject:
   - component: {fileID: 1403891692}
   - component: {fileID: 1403891693}
   m_Layer: 0
-  m_Name: Grupo helechos 85
+  m_Name: Fern Cluster 85
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29085,7 +29085,7 @@ GameObject:
   - component: {fileID: 1409050331}
   - component: {fileID: 1409050332}
   m_Layer: 0
-  m_Name: Grupo helechos 62
+  m_Name: Fern Cluster 62
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29508,7 +29508,7 @@ GameObject:
   - component: {fileID: 1433555336}
   - component: {fileID: 1433555337}
   m_Layer: 0
-  m_Name: Grupo helechos 97
+  m_Name: Fern Cluster 97
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29571,7 +29571,7 @@ GameObject:
   - component: {fileID: 1441837419}
   - component: {fileID: 1441837420}
   m_Layer: 0
-  m_Name: Grupo helechos 28
+  m_Name: Fern Cluster 28
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29904,7 +29904,7 @@ GameObject:
   - component: {fileID: 1448877355}
   - component: {fileID: 1448877356}
   m_Layer: 0
-  m_Name: Grupo helechos 99
+  m_Name: Fern Cluster 99
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29967,7 +29967,7 @@ GameObject:
   - component: {fileID: 1448952700}
   - component: {fileID: 1448952701}
   m_Layer: 0
-  m_Name: Grupo helechos 76
+  m_Name: Fern Cluster 76
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30390,7 +30390,7 @@ GameObject:
   - component: {fileID: 1457620455}
   - component: {fileID: 1457620456}
   m_Layer: 0
-  m_Name: Grupo helechos 37
+  m_Name: Fern Cluster 37
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30452,7 +30452,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1459036982}
   m_Layer: 0
-  m_Name: 03 Sotobosque por sectores
+  m_Name: 03 Groundcover Sectors
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -31106,7 +31106,7 @@ GameObject:
   - component: {fileID: 1477564570}
   - component: {fileID: 1477564571}
   m_Layer: 0
-  m_Name: Grupo helechos 101
+  m_Name: Fern Cluster 101
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -31709,7 +31709,7 @@ GameObject:
   - component: {fileID: 1501697133}
   - component: {fileID: 1501697134}
   m_Layer: 0
-  m_Name: Grupo helechos 1
+  m_Name: Fern Cluster 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32132,7 +32132,7 @@ GameObject:
   - component: {fileID: 1513487382}
   - component: {fileID: 1513487383}
   m_Layer: 0
-  m_Name: Grupo helechos 91
+  m_Name: Fern Cluster 91
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32683,7 +32683,7 @@ GameObject:
   - component: {fileID: 1527167725}
   - component: {fileID: 1527167726}
   m_Layer: 0
-  m_Name: Grupo helechos 77
+  m_Name: Fern Cluster 77
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -33582,7 +33582,7 @@ GameObject:
   - component: {fileID: 1590747539}
   - component: {fileID: 1590747540}
   m_Layer: 0
-  m_Name: Grupo helechos 9
+  m_Name: Fern Cluster 9
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -33915,7 +33915,7 @@ GameObject:
   - component: {fileID: 1608493483}
   - component: {fileID: 1608493484}
   m_Layer: 0
-  m_Name: Grupo helechos 49
+  m_Name: Fern Cluster 49
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -34434,7 +34434,7 @@ GameObject:
   - component: {fileID: 1643031592}
   - component: {fileID: 1643031593}
   m_Layer: 0
-  m_Name: Grupo helechos 103
+  m_Name: Fern Cluster 103
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -34915,7 +34915,7 @@ GameObject:
   - component: {fileID: 1656574483}
   - component: {fileID: 1656574484}
   m_Layer: 0
-  m_Name: Grupo helechos 90
+  m_Name: Fern Cluster 90
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -35068,7 +35068,7 @@ GameObject:
   - component: {fileID: 1660744324}
   - component: {fileID: 1660744325}
   m_Layer: 0
-  m_Name: Grupo helechos 20
+  m_Name: Fern Cluster 20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -35713,7 +35713,7 @@ GameObject:
   - component: {fileID: 1690166236}
   - component: {fileID: 1690166237}
   m_Layer: 0
-  m_Name: Grupo helechos 86
+  m_Name: Fern Cluster 86
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -35776,7 +35776,7 @@ GameObject:
   - component: {fileID: 1690358861}
   - component: {fileID: 1690358862}
   m_Layer: 0
-  m_Name: Grupo helechos 42
+  m_Name: Fern Cluster 42
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -37543,7 +37543,7 @@ GameObject:
   - component: {fileID: 1757220157}
   - component: {fileID: 1757220158}
   m_Layer: 0
-  m_Name: Grupo helechos 4
+  m_Name: Fern Cluster 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -37876,7 +37876,7 @@ GameObject:
   - component: {fileID: 1764331546}
   - component: {fileID: 1764331547}
   m_Layer: 0
-  m_Name: Grupo helechos 34
+  m_Name: Fern Cluster 34
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -38065,7 +38065,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1767346872}
   m_Layer: 0
-  m_Name: 02 Estrato intermedio
+  m_Name: 02 Midstory
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -38532,7 +38532,7 @@ GameObject:
   - component: {fileID: 1793681656}
   - component: {fileID: 1793681657}
   m_Layer: 0
-  m_Name: Grupo helechos 74
+  m_Name: Fern Cluster 74
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -38775,7 +38775,7 @@ GameObject:
   - component: {fileID: 1816267290}
   - component: {fileID: 1816267291}
   m_Layer: 0
-  m_Name: Grupo helechos 84
+  m_Name: Fern Cluster 84
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -38986,7 +38986,7 @@ GameObject:
   - component: {fileID: 1827880748}
   - component: {fileID: 1827880749}
   m_Layer: 0
-  m_Name: Grupo helechos 79
+  m_Name: Fern Cluster 79
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39303,7 +39303,7 @@ GameObject:
   - component: {fileID: 1845133015}
   - component: {fileID: 1845133016}
   m_Layer: 0
-  m_Name: Grupo helechos 27
+  m_Name: Fern Cluster 27
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39710,7 +39710,7 @@ GameObject:
   - component: {fileID: 1870772148}
   - component: {fileID: 1870772149}
   m_Layer: 0
-  m_Name: Grupo helechos 2
+  m_Name: Fern Cluster 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39773,7 +39773,7 @@ GameObject:
   - component: {fileID: 1871967157}
   - component: {fileID: 1871967158}
   m_Layer: 0
-  m_Name: Grupo helechos 45
+  m_Name: Fern Cluster 45
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39926,7 +39926,7 @@ GameObject:
   - component: {fileID: 1890792714}
   - component: {fileID: 1890792715}
   m_Layer: 0
-  m_Name: Grupo helechos 73
+  m_Name: Fern Cluster 73
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39989,7 +39989,7 @@ GameObject:
   - component: {fileID: 1897100402}
   - component: {fileID: 1897100403}
   m_Layer: 0
-  m_Name: Grupo helechos 11
+  m_Name: Fern Cluster 11
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40144,7 +40144,7 @@ GameObject:
   - component: {fileID: 1906420087}
   - component: {fileID: 1906420088}
   m_Layer: 0
-  m_Name: Grupo helechos 98
+  m_Name: Fern Cluster 98
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40747,7 +40747,7 @@ GameObject:
   - component: {fileID: 1928697410}
   - component: {fileID: 1928697411}
   m_Layer: 0
-  m_Name: Grupo helechos 58
+  m_Name: Fern Cluster 58
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41370,7 +41370,7 @@ GameObject:
   - component: {fileID: 1966864777}
   - component: {fileID: 1966864778}
   m_Layer: 0
-  m_Name: Grupo helechos 25
+  m_Name: Fern Cluster 25
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41433,7 +41433,7 @@ GameObject:
   - component: {fileID: 1967367042}
   - component: {fileID: 1967367043}
   m_Layer: 0
-  m_Name: Grupo helechos 69
+  m_Name: Fern Cluster 69
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41496,7 +41496,7 @@ GameObject:
   - component: {fileID: 1967676110}
   - component: {fileID: 1967676111}
   m_Layer: 0
-  m_Name: Grupo helechos 57
+  m_Name: Fern Cluster 57
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42189,7 +42189,7 @@ GameObject:
   - component: {fileID: 1998274370}
   - component: {fileID: 1998274371}
   m_Layer: 0
-  m_Name: Grupo helechos 3
+  m_Name: Fern Cluster 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42818,7 +42818,7 @@ GameObject:
   - component: {fileID: 2015834830}
   - component: {fileID: 2015834831}
   m_Layer: 0
-  m_Name: Grupo helechos 15
+  m_Name: Fern Cluster 15
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42881,7 +42881,7 @@ GameObject:
   - component: {fileID: 2016517795}
   - component: {fileID: 2016517796}
   m_Layer: 0
-  m_Name: Grupo helechos 0
+  m_Name: Fern Cluster 0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -43124,7 +43124,7 @@ GameObject:
   - component: {fileID: 2027212198}
   - component: {fileID: 2027212199}
   m_Layer: 0
-  m_Name: Grupo helechos 13
+  m_Name: Fern Cluster 13
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -43367,7 +43367,7 @@ GameObject:
   - component: {fileID: 2047471017}
   - component: {fileID: 2047471018}
   m_Layer: 0
-  m_Name: Grupo helechos 81
+  m_Name: Fern Cluster 81
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -43645,7 +43645,7 @@ GameObject:
   - component: {fileID: 2075078181}
   - component: {fileID: 2075078182}
   m_Layer: 0
-  m_Name: Grupo helechos 93
+  m_Name: Fern Cluster 93
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44343,7 +44343,7 @@ GameObject:
   - component: {fileID: 2125668772}
   - component: {fileID: 2125668773}
   m_Layer: 0
-  m_Name: Grupo helechos 8
+  m_Name: Fern Cluster 8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44406,7 +44406,7 @@ GameObject:
   - component: {fileID: 2127981963}
   - component: {fileID: 2127981964}
   m_Layer: 0
-  m_Name: Grupo helechos 32
+  m_Name: Fern Cluster 32
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44469,7 +44469,7 @@ GameObject:
   - component: {fileID: 2135359972}
   - component: {fileID: 2135359973}
   m_Layer: 0
-  m_Name: Grupo helechos 35
+  m_Name: Fern Cluster 35
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

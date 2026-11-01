@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1892347100263498947}
   - component: {fileID: 8412845566640815885}
   m_Layer: 0
-  m_Name: Hojas en abanico
+  m_Name: Fan Leaves
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -102,7 +102,7 @@ GameObject:
   - component: {fileID: 6086442141201217504}
   - component: {fileID: 4003274859305121539}
   m_Layer: 0
-  m_Name: Tronco y ramas
+  m_Name: Trunk and Branches
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -291,7 +291,7 @@ GameObject:
   - component: {fileID: 1296577292539304342}
   - component: {fileID: 1915605948902627895}
   m_Layer: 0
-  m_Name: Tronco y ramas
+  m_Name: Trunk and Branches
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -471,7 +471,7 @@ GameObject:
   - component: {fileID: 7376983936021594416}
   - component: {fileID: 2592033223545697049}
   m_Layer: 0
-  m_Name: Hojas en abanico
+  m_Name: Fan Leaves
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -561,7 +561,7 @@ GameObject:
   - component: {fileID: 8636959715138001098}
   - component: {fileID: 6441084958024505628}
   m_Layer: 0
-  m_Name: Tronco y ramas
+  m_Name: Trunk and Branches
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -651,7 +651,7 @@ GameObject:
   - component: {fileID: 8329814390351987677}
   - component: {fileID: 466454780378682115}
   m_Layer: 0
-  m_Name: Hojas en abanico
+  m_Name: Fan Leaves
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

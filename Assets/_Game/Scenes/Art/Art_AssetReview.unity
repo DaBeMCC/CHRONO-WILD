@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 207724287}
   - component: {fileID: 207724286}
   m_Layer: 0
-  m_Name: "Suelo forestal \xB7 muestra 12 m"
+  m_Name: "Forest Soil \xB7 12 m Sample"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -335,7 +335,7 @@ GameObject:
   - component: {fileID: 1476953517}
   - component: {fileID: 1476953516}
   m_Layer: 0
-  m_Name: "Sol de revisi\xF3n"
+  m_Name: Review Sun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
