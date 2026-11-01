@@ -70,7 +70,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ChronoWild.Runtime::ChronoWild.Rendering.JungleFogFeature
   m_Active: 1
   shader: {fileID: 4800000, guid: eeb09816c4f60d16f92a815c165ae542, type: 3}
-  passEvent: 450
+  passEvent: 500
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 1
