@@ -26,9 +26,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _DepthRange: 0.18
+    - _ReflectionStrength: 1
     - _Ripple: 0.012
     - _Roughness: 0.1
     m_Colors:
-    - _BaseColor: {r: 0.12999997, g: 0.17999998, b: 0.11999995, a: 1}
+    - _BaseColor: {r: 0.08, g: 0.1, b: 0.07, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
