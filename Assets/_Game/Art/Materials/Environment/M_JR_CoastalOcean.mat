@@ -25,26 +25,36 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _BreakDepth: 0.9
+    - _BreakFoam: 0.85
     - _Clarity: 2.2
     - _CrestFoam: 0.4
     - _DepthRange: 6
     - _EdgeFade: 0.06
+    - _FarSwell: 0.18
     - _FoamBandSpeed: 0.35
     - _FoamBands: 2.2
+    - _Glitter: 1.5
     - _Refraction: 0.02
     - _Ripples: 0.35
     - _Roughness: 0.06
     - _ShoreFoamDepth: 0.55
+    - _SurfHeight: 0.45
+    - _SurfSpacing: 2.6
+    - _SurfSpeed: 0.9
+    - _SurfStartDepth: 7
+    - _SwellLines: 1
     - _WaveDirection: 90
-    - _WaveFade: 180
-    - _WaveHeight: 0.22
-    - _WaveLength: 14
+    - _WaveFade: 350
+    - _WaveHeight: 0.35
+    - _WaveLength: 22
     - _WaveSpeed: 1
+    - _Whitecaps: 0.6
     m_Colors:
-    - _DeepColor: {r: 0, g: 0.2, b: 0.4, a: 1}
+    - _DeepColor: {r: 0, g: 0.22, b: 0.45, a: 1}
     - _FoamColor: {r: 0.95, g: 0.96, b: 0.94, a: 1}
     - _ShallowColor: {r: 0.19999996, g: 0.62, b: 0.58, a: 1}
-    - _SkyHorizon: {r: 0.56, g: 0.7, b: 0.84, a: 1}
-    - _SkyZenith: {r: 0.29999998, g: 0.47999996, b: 0.78, a: 1}
+    - _SkyHorizon: {r: 0.38, g: 0.6, b: 0.8, a: 1}
+    - _SkyZenith: {r: 0.2, g: 0.44, b: 0.74, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
