@@ -22,39 +22,59 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _FFTDisplacement:
+        m_Texture: {fileID: 18700000, guid: 3b006e63c28ef5a16af31d34de906709, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FFTNormal:
+        m_Texture: {fileID: 18700000, guid: 35782a2b551956ef68d7aa208d2cc4b3, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _BreakDepth: 0.9
-    - _BreakFoam: 0.85
-    - _Clarity: 2.2
+    - _BreakFoam: 1
+    - _BreakerIndex: 0.85
+    - _Caustics: 1.2
+    - _Clarity: 1.6
     - _CrestFoam: 0.4
-    - _DepthRange: 6
+    - _DepthRange: 4
     - _EdgeFade: 0.06
-    - _FarSwell: 0.18
+    - _FFTDetail: 0.45
+    - _FFTFoam: 1.8
+    - _FFTFrames: 64
+    - _FFTPatch: 64
+    - _FFTPeriod: 16
+    - _FFTStrength: 1
+    - _FarSwell: 0.08
     - _FoamBandSpeed: 0.35
     - _FoamBands: 2.2
-    - _Glitter: 1.5
+    - _Glitter: 0.6
     - _Refraction: 0.02
     - _Ripples: 0.35
     - _Roughness: 0.06
-    - _ShoreFoamDepth: 0.55
-    - _SurfHeight: 0.45
+    - _RunUp: 1.2
+    - _SSSStrength: 1.1
+    - _ShoreFoamDepth: 0.6
+    - _SurfHeight: 1.5
+    - _SurfPeriod: 9
     - _SurfSpacing: 2.6
     - _SurfSpeed: 0.9
-    - _SurfStartDepth: 7
+    - _SurfStartDepth: 14
     - _SwellLines: 1
     - _WaveDirection: 90
     - _WaveFade: 350
-    - _WaveHeight: 0.35
-    - _WaveLength: 22
+    - _WaveHeight: 0.45
+    - _WaveLength: 110
     - _WaveSpeed: 1
-    - _Whitecaps: 0.6
+    - _Whitecaps: 1
     m_Colors:
-    - _DeepColor: {r: 0, g: 0.22, b: 0.45, a: 1}
+    - _DeepColor: {r: 0, g: 0.12, b: 0.22, a: 1}
     - _FoamColor: {r: 0.95, g: 0.96, b: 0.94, a: 1}
-    - _ShallowColor: {r: 0.19999996, g: 0.62, b: 0.58, a: 1}
-    - _SkyHorizon: {r: 0.38, g: 0.6, b: 0.8, a: 1}
-    - _SkyZenith: {r: 0.2, g: 0.44, b: 0.74, a: 1}
+    - _SSSColor: {r: 0.08, g: 0.62, b: 0.42, a: 1}
+    - _ShallowColor: {r: 0.04, g: 0.42, b: 0.38, a: 1}
+    - _SkyHorizon: {r: 0.26, g: 0.42, b: 0.62, a: 1}
+    - _SkyZenith: {r: 0.12, g: 0.26, b: 0.5, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

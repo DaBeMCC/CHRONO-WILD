@@ -42,6 +42,7 @@ Shader "CHRONO WILD/Water/Jungle Puddle"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
+   #include "Assets/_MyShaders/Environment/JungleAtmosphere.hlsl"
 
    CBUFFER_START(UnityPerMaterial)
    float4 _Absorption; half4 _ScatterColor; half _Turbidity; half _Refraction; half _Roughness;
@@ -181,6 +182,7 @@ Shader "CHRONO WILD/Water/Jungle Puddle"
     half shore = saturate(depth / _ShoreSoftness) * v.edge;
     half wetBand = 1 - saturate(depth / (_ShoreSoftness * 3));
     color *= 1 - wetBand * _WetEdgeDarkening * 0.5;
+    color = ApplyJungleAtmosphere(color, v.positionWS, sun.color, sun.direction);
     return half4(color, shore);
    }
    ENDHLSL

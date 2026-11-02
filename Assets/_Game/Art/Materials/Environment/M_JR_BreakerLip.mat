@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_JR_BreakerLip
+  m_Shader: {fileID: 4800000, guid: ed8fb99225d504a59a9c6a77d360ab10, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _BreakerIndex: 0.85
+    - _DebugPhase: -1
+    - _LipReach: 1.2
+    - _Opacity: 0.85
+    - _SurfHeight: 1.5
+    - _SurfPeriod: 9
+    - _SurfStartDepth: 14
+    - _WaveDirection: 90
+    m_Colors:
+    - _FoamColor: {r: 0.95, g: 0.96, b: 0.95, a: 1}
+    - _SSSColor: {r: 0.08, g: 0.55, b: 0.4, a: 1}
+    - _WaterColor: {r: 0.03, g: 0.25, b: 0.24, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

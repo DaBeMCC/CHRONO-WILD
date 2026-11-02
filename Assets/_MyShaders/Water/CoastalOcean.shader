@@ -22,17 +22,18 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
   _WaveSpeed("Wave Speed",Float)=1
   _WaveFade("Vertex Wave Fade Distance (m)",Float)=350
   [Header(Surf)]
-  _SurfHeight("Surf Height (m)",Range(0,1.5))=0.45
-  _SurfSpacing("Surf Spacing",Float)=2.6
-  _SurfSpeed("Surf Speed",Float)=0.9
-  _SurfStartDepth("Surf Start Depth (m)",Float)=7
+  _SurfHeight("Offshore Wave Height (m)",Range(0,1.5))=0.4
+  _SurfPeriod("Wave Period (s)",Range(4,16))=9
+  _BreakerIndex("Breaker Index (H/depth)",Range(0.5,1.2))=0.78
+  _RunUp("Swash Run-up (m)",Range(0,1.5))=0.45
+  _SurfStartDepth("Shoaling Start Depth (m)",Float)=8
   _BreakDepth("Break Depth (m)",Float)=0.9
   [Header(Surface Detail)]
   _Ripples("Detail Chop",Range(0,1))=0.35
   _FarSwell("Far Swell Normals",Range(0,1))=0.18
   _SwellLines("Far Swell Lines",Range(0,2))=1
   _Roughness("Roughness",Range(0,0.3))=0.06
-  _Glitter("Sun Glitter",Range(0,4))=1.5
+  _Glitter("Sun Glitter",Range(0,4))=0.6
   _SkyZenith("Sky Zenith (reflection)",Color)=(0.30,0.48,0.78,1)
   _SkyHorizon("Sky Horizon (reflection)",Color)=(0.46,0.62,0.8,1)
   [Header(Foam)]
@@ -41,6 +42,19 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
   _BreakFoam("Breaking Foam",Range(0,1))=0.85
   _Whitecaps("Far Whitecaps",Range(0,1))=0.6
   _EdgeFade("Shoreline Fade (m)",Range(0.01,0.5))=0.06
+  [Header(Baked FFT Ocean)]
+  [NoScaleOffset] _FFTDisplacement("FFT Displacement (dx, h, dz, J)",2DArray)="" {}
+  [NoScaleOffset] _FFTNormal("FFT Slopes, Foam, Caustics",2DArray)="" {}
+  _FFTPatch("FFT Patch Size (m)",Float)=64
+  _FFTFrames("FFT Frames",Float)=64
+  _FFTPeriod("FFT Loop Period (s)",Float)=16
+  _FFTStrength("FFT Wave Strength",Range(0,2))=1
+  _FFTDetail("FFT Second Band Strength",Range(0,1))=0.45
+  _FFTFoam("FFT Whitecap Foam",Range(0,2))=1
+  [Header(Light In Water)]
+  _SSSColor("Subsurface Color",Color)=(0.12,0.75,0.62,1)
+  _SSSStrength("Subsurface Strength",Range(0,3))=1.2
+  _Caustics("Caustics",Range(0,3))=1.2
  }
  SubShader
  {
@@ -60,11 +74,12 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
+   #include "Assets/_MyShaders/Environment/JungleAtmosphere.hlsl"
 
    CBUFFER_START(UnityPerMaterial)
    half4 _ShallowColor; half4 _DeepColor; float _DepthRange; float _Clarity; half _Refraction;
    float _WaveHeight; float _WaveLength; float _WaveDirection; float _WaveSpeed; float _WaveFade;
-   float _SurfHeight; float _SurfSpacing; float _SurfSpeed; float _SurfStartDepth; float _BreakDepth;
+   float _SurfHeight; float _SurfPeriod; float _BreakerIndex; float _RunUp; float _SurfStartDepth; float _BreakDepth;
    half _Ripples; half _FarSwell; half _SwellLines; half _Roughness; half _Glitter; half4 _SkyZenith; half4 _SkyHorizon;
    half4 _FoamColor; float _ShoreFoamDepth; half _BreakFoam; half _Whitecaps; half _EdgeFade;
    CBUFFER_END
@@ -72,16 +87,32 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
    TEXTURE2D(_ChronoSeabedTex); SAMPLER(sampler_ChronoSeabedTex);
    float4 _ChronoSeabedRect;
    float _ChronoSeabedOpenDepth;
+   TEXTURE2D_ARRAY(_FFTDisplacement); SAMPLER(sampler_FFTDisplacement);
+   TEXTURE2D_ARRAY(_FFTNormal); SAMPLER(sampler_FFTNormal);
+   float _FFTPatch, _FFTFrames, _FFTPeriod, _FFTStrength, _FFTDetail, _FFTFoam;
+   half4 _SSSColor; half _SSSStrength, _Caustics;
+
+   // Looping FFT frame pair and blend factor for a given time.
+   void FFTFrame(float time, out float f0, out float f1, out float blend)
+   {
+    float fr = frac(time / _FFTPeriod) * _FFTFrames;
+    f0 = floor(fr); f1 = fmod(f0 + 1.0, _FFTFrames); blend = fr - f0;
+   }
+   // Second band: smaller tile, rotated and time-shifted so the two never line up.
+   float2 BandB(float2 xz) { return float2(xz.x * 0.8 - xz.y * 0.6, xz.x * 0.6 + xz.y * 0.8) / (_FFTPatch * 0.271) + 0.37; }
 
    struct Attributes { float4 positionOS:POSITION; };
    struct Varyings
    {
     float4 positionCS:SV_POSITION; float3 positionWS:TEXCOORD0; float3 normalWS:TEXCOORD1;
     float4 waveData:TEXCOORD2; // x swell crest, y surf crest, z breaking, w seabed depth
+    float2 fftData:TEXCOORD3;  // x FFT height (m), y FFT jacobian
+    float2 restXZ:TEXCOORD4;   // undisplaced position: textures and foam must not stretch with the waves
    };
 
-   float Hash1(float2 p) { return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
-   float2 Hash2(float2 p) { p = float2(dot(p, float2(127.1, 311.7)), dot(p, float2(269.5, 183.3))); return frac(sin(p) * 43758.5453); }
+   // Sine-free hashes (Hoskins): sin() of large arguments loses precision and turns noise into blocks.
+   float Hash1(float2 p) { float3 p3 = frac(float3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return frac((p3.x + p3.y) * p3.z); }
+   float2 Hash2(float2 p) { float3 p3 = frac(float3(p.xyx) * float3(0.1031, 0.1030, 0.0973)); p3 += dot(p3, p3.yzx + 33.33); return frac((p3.xx + p3.yz) * p3.zy); }
    float ValueNoise(float2 p)
    {
     float2 i = floor(p), f = frac(p); f = f * f * (3 - 2 * f);
@@ -123,18 +154,19 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
    {
     Varyings v;
     float3 p = TransformObjectToWorld(a.positionOS.xyz);
+    v.restXZ = p.xz;
     float camFade = 1.0 - saturate(distance(p.xz, _WorldSpaceCameraPos.xz) / _WaveFade);
     // Vertex waves only on the fine coast grid (the seabed rectangle plus a margin);
     // the coarse far skirt stays flat and relies on normal detail.
     float2 rectCenter = _ChronoSeabedRect.xy + _ChronoSeabedRect.zw * 0.5;
     float2 outside = abs(p.xz - rectCenter) - _ChronoSeabedRect.zw * 0.5;
-    camFade *= 1.0 - smoothstep(0.0, 15.0, max(outside.x, outside.y));
+    camFade *= 1.0 - smoothstep(-25.0, -5.0, max(outside.x, outside.y));
     float t = _Time.y * _WaveSpeed;
 
     float bed = Seabed(p.xz);
     float depth = max(-bed, 0.0);
     // Shore direction: uphill on the seabed.
-    float e = 2.0;
+    float e = 6.0;
     float2 grad = float2(Seabed(p.xz + float2(e, 0)) - Seabed(p.xz - float2(e, 0)), Seabed(p.xz + float2(0, e)) - Seabed(p.xz - float2(0, e)));
     float2 shoreDir = length(grad) > 1e-4 ? normalize(grad) : float2(0, 1);
 
@@ -150,30 +182,82 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
                 + Gerstner(p.xz, d3, _WaveLength * 0.27, 0.4, h * 0.07, t, tangent, binormal);
     float swellCrest = saturate(disp.y / max(h * 0.6, 1e-3));
 
-    // Surf: phase from sqrt(depth) so crests bunch up toward the beach (shoaling) and travel shoreward.
-    float along = dot(p.xz, float2(-shoreDir.y, shoreDir.x));
-    float sets = 0.55 + 0.45 * ValueNoise(float2(along * 0.04, _Time.y * 0.05));
-    float phase = sqrt(depth) * _SurfSpacing + _Time.y * _SurfSpeed;
-    float grow = 1.0 - smoothstep(_BreakDepth * 1.6, _SurfStartDepth, depth);
-    float die = smoothstep(0.05, _BreakDepth * 0.7, depth);
-    float amp = _SurfHeight * grow * die * sets * camFade;
-    float profile = SurfProfile(frac(-phase));
+    // Surf from shallow-water physics. Waves keep their period T while slowing to c = sqrt(g*h);
+    // on a slope s the travel time from depth h to the shoreline is 2*sqrt(h)/(s*sqrt(g)), so the
+    // phase spacing (and crests bunching toward the beach) follows from the real seabed slope.
+    float2 swellDir = float2(cos(radians(_WaveDirection)), sin(radians(_WaveDirection)));
+    float along = dot(p.xz, float2(-swellDir.y, swellDir.x));
+    float bedSlope = clamp(length(grad) / (2.0 * e), 0.03, 0.45);
+    float travel = 2.0 * sqrt(depth) / (bedSlope * 3.132);
+    // Sets: groups of bigger waves every ~7 periods, drifting along the beach.
+    float sets = 0.62 + 0.38 * sin(TWO_PI * _Time.y / (_SurfPeriod * 7.0) + along * 0.012);
+    float waveH = _SurfHeight * sets;
+    float phase = frac((_Time.y + travel) / _SurfPeriod + along * 0.0025);
+    // Shoaling (Green's law H ~ h^-1/4) until the breaker index H/h is reached; after that the
+    // broken wave is a bore whose height is a fraction of the local depth.
+    float breakDepth = waveH / _BreakerIndex;
+    float shoaled = waveH * pow(_SurfStartDepth / max(depth, breakDepth), 0.25) * 0.55;
+    float unbroken = smoothstep(breakDepth * 0.85, breakDepth * 1.15, depth);
+    float boreH = depth * 0.8;
+    float growIn = 1.0 - smoothstep(_SurfStartDepth * 0.6, _SurfStartDepth, depth);
+    // Unbroken: peaked crest with a steepening front. Broken: a turbulent front with a long tail.
+    float sPeak = phase;
+    // Asymmetric crest: long back, front steepening into a near-vertical face near the break.
+    float frontW = lerp(0.03, 0.12, saturate((depth - breakDepth) / 3.0));
+    float backW = lerp(0.3, 0.35, saturate((depth - breakDepth) / 3.0));
+    float peak = sPeak < 0.12 ? pow(saturate(1.0 - (0.12 - sPeak) / frontW), 1.6) : pow(saturate(1.0 - (sPeak - 0.12) / backW), 2.2);
+    float boreShape = sPeak < 0.06 ? sPeak / 0.06 : exp(-(sPeak - 0.06) * 7.0);
+    float amp = lerp(boreH, shoaled, unbroken) * growIn * camFade;
+    float profile = lerp(boreShape, peak, unbroken);
     float rise = amp * profile;
-    float lean = amp * 0.6 * profile * saturate(1.0 - depth / (_BreakDepth * 2.5));
     disp.y += rise;
-    disp.xz += shoreDir * lean;
-    float breaking = profile * saturate(1.0 - (depth - _BreakDepth * 0.4) / (_BreakDepth * 1.8)) * grow * die * sets;
+    // Plunging lip: just before and at the break the crest is thrown forward over the trough.
+    float nearBreak = smoothstep(breakDepth * 2.0, breakDepth, depth) * unbroken;
+    disp.xz += shoreDir * amp * (0.25 * (1.0 - unbroken) + 0.9 * nearBreak * pow(peak, 3.0)) * profile;
+    disp.y += amp * 0.35 * nearBreak * pow(peak, 4.0);
+    disp.y += (1.0 - unbroken) * growIn * camFade * 0.18 * exp(-sPeak * 3.0) * saturate(depth / 0.2);
+    // White water: the plunging/spilling crest at the break point, then the bore and its foam tail.
+    float breaking = (1.0 - unbroken) * saturate(exp(-sPeak * 5.0) * 1.3) * growIn * saturate(depth / 0.15);
+
+    // Swash: the last bore runs up the sand as a thin sheet and drains back. The sheet level rises
+    // fast when the bore arrives and drains slowly; the mesh over dry sand stays hidden under terrain.
+    float shorePhase = frac(_Time.y / _SurfPeriod + along * 0.0025);
+    float uprush = shorePhase < 0.18 ? smoothstep(0.0, 0.18, shorePhase) : exp(-(shorePhase - 0.18) * 3.2);
+    float swashLevel = _RunUp * sets * uprush * camFade - 0.06;
+    float nearShore = 1.0 - smoothstep(0.0, 1.2, depth);
+    float onBeach = step(bed, 0.0) < 0.5 ? 1.0 : nearShore;
+    float surfaceY = max(disp.y, swashLevel);
+    disp.y = lerp(disp.y, surfaceY, onBeach);
+    float swash = saturate((swashLevel - bed) / 0.15) * (1.0 - smoothstep(0.0, 0.8, depth));
+
     // Surf slope along the shore direction, folded into the normal frame.
-    float stepM = 0.4;
+    float stepM = 0.5;
     float depthAhead = max(-Seabed(p.xz + shoreDir * stepM), 0.0);
-    float slope = (amp * SurfProfile(frac(-(sqrt(depthAhead) * _SurfSpacing + _Time.y * _SurfSpeed))) - rise) / stepM;
+    float phaseAhead = frac((_Time.y + 2.0 * sqrt(depthAhead) / (bedSlope * 3.132)) / _SurfPeriod + along * 0.0025);
+    float unbrokenA = smoothstep(breakDepth * 0.85, breakDepth * 1.15, depthAhead);
+    float peakA = pow(saturate(1.0 - abs(phaseAhead - 0.12) / lerp(0.12, 0.35, saturate((depthAhead - breakDepth) / 3.0))), 2.4);
+    float boreA = phaseAhead < 0.06 ? phaseAhead / 0.06 : exp(-(phaseAhead - 0.06) * 7.0);
+    float riseAhead = lerp(depthAhead * 0.8, waveH * pow(_SurfStartDepth / max(depthAhead, breakDepth), 0.25) * 0.55, unbrokenA) * growIn * camFade * lerp(boreA, peakA, unbrokenA);
+    float slope = (riseAhead - rise) / stepM;
     tangent.y += slope * shoreDir.x;
     binormal.y += slope * shoreDir.y;
 
+    // Baked FFT displacement: two bands of the same looping patch, calmed in the surf zone
+    // (the breaker model owns the shallows) and faded with camera distance like the swell.
+    float f0, f1, fb; FFTFrame(_Time.y, f0, f1, fb);
+    float2 uvA = p.xz / _FFTPatch;
+    float4 dA = lerp(SAMPLE_TEXTURE2D_ARRAY_LOD(_FFTDisplacement, sampler_FFTDisplacement, uvA, f0, 0), SAMPLE_TEXTURE2D_ARRAY_LOD(_FFTDisplacement, sampler_FFTDisplacement, uvA, f1, 0), fb);
+    float g0, g1, gb; FFTFrame(_Time.y * 1.37 + 5.3, g0, g1, gb);
+    float2 uvB = BandB(p.xz);
+    float4 dB = lerp(SAMPLE_TEXTURE2D_ARRAY_LOD(_FFTDisplacement, sampler_FFTDisplacement, uvB, g0, 0), SAMPLE_TEXTURE2D_ARRAY_LOD(_FFTDisplacement, sampler_FFTDisplacement, uvB, g1, 0), gb);
+    float fftAmount = _FFTStrength * camFade * saturate((depth - breakDepth * 1.5) / 3.0);
+    float3 fftDisp = (dA.xyz + dB.xyz * _FFTDetail * 0.271) * fftAmount;
+    disp += fftDisp;
+    v.fftData = float2(fftDisp.y, lerp(1.0, min(dA.w, dB.w), saturate(fftAmount)));
     p += disp;
     v.positionWS = p;
     v.normalWS = normalize(cross(binormal, tangent));
-    v.waveData = float4(swellCrest, profile * step(0.001, amp), breaking, depth);
+    v.waveData = float4(swellCrest, profile * saturate(amp / 0.08) * unbroken, max(breaking, swash * uprush * 0.8), depth);
     v.positionCS = TransformWorldToHClip(p);
     return v;
    }
@@ -206,6 +290,48 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
     return slope;
    }
 
+   // Surf state at a point, recomputed per pixel for foam (x unbroken 0..1, y wave phase,
+   // z whitewater, w swash sheet foam). Mirrors the vertex surf model.
+   float4 SurfFoamState(float2 xz, out float2 shoreDirOut)
+   {
+    float bed = Seabed(xz);
+    float depth = max(-bed, 0.0);
+    float e = 6.0;
+    float2 grad = float2(Seabed(xz + float2(e, 0)) - Seabed(xz - float2(e, 0)), Seabed(xz + float2(0, e)) - Seabed(xz - float2(0, e)));
+    float2 shoreDir = length(grad) > 1e-4 ? normalize(grad) : float2(0, 1);
+    shoreDirOut = shoreDir;
+    float2 swellDir = float2(cos(radians(_WaveDirection)), sin(radians(_WaveDirection)));
+    float along = dot(xz, float2(-swellDir.y, swellDir.x));
+    float bedSlope = clamp(length(grad) / (2.0 * e), 0.03, 0.45);
+    float travel = 2.0 * sqrt(depth) / (bedSlope * 3.132);
+    float sets = 0.62 + 0.38 * sin(TWO_PI * _Time.y / (_SurfPeriod * 7.0) + along * 0.012);
+    float waveH = _SurfHeight * sets;
+    float phase = frac((_Time.y + travel) / _SurfPeriod + along * 0.0025);
+    float breakDepth = waveH / _BreakerIndex;
+    float unbroken = smoothstep(breakDepth * 0.85, breakDepth * 1.15, depth);
+    float growIn = 1.0 - smoothstep(_SurfStartDepth * 0.6, _SurfStartDepth, depth);
+    float white = (1.0 - unbroken) * exp(-phase * 2.5) * growIn * saturate(depth / 0.12);
+    // Impact: where the lip lands the water explodes into dense foam that spreads shoreward.
+    float impactZone = smoothstep(breakDepth * 1.3, breakDepth * 0.9, depth) * smoothstep(breakDepth * 0.35, breakDepth * 0.7, depth);
+    white += impactZone * exp(-phase * 6.0) * 1.5 * growIn;
+    // A thin crest of foam starts just before the break as the front steepens.
+    // Spilling crest: as the wave nears the break, white water starts at the top of the crest and
+    // cascades down the front face; the closer to breaking, the further down it reaches.
+    float closeness = smoothstep(breakDepth * 2.2, breakDepth, depth) * unbroken;
+    float crestTop = phase >= 0.12 ? exp(-(phase - 0.12) * 60.0) : exp(-(0.12 - phase) / max(0.006 + closeness * 0.05, 1e-3));
+    float spillSections = smoothstep(0.3, 0.7, ValueNoise(float2(along * 0.08, floor((_Time.y + travel) / _SurfPeriod) * 2.3)));
+    white += closeness * crestTop * lerp(0.5, 1.4, spillSections);
+    float shorePhase = frac(_Time.y / _SurfPeriod + along * 0.0025);
+    float uprush = shorePhase < 0.18 ? smoothstep(0.0, 0.18, shorePhase) : exp(-(shorePhase - 0.18) * 3.2);
+    float swashLevel = _RunUp * sets * uprush - 0.06;
+    // Foam lace left on the draining sheet: strongest at its leading edge and fading as it drains.
+    float sheet = saturate((swashLevel - bed) / 0.2) * (1.0 - smoothstep(0.0, 0.6, depth));
+    float lace = sheet * lerp(1.0, 0.45, saturate((shorePhase - 0.18) * 2.0));
+    // Residual foam patches left between bands: they burst away over the period instead of fading.
+    white += (1.0 - unbroken) * growIn * 0.55 * exp(-phase * 0.8);
+    return float4(unbroken, phase, saturate(white), lace);
+   }
+
    half4 Fragment(Varyings v) : SV_Target
    {
     bool high = _ChronoQuality > 0.5;
@@ -219,8 +345,13 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
     rayDepth = min(rayDepth, (v.waveData.w + 0.5) / max(view.y, 0.05));
     float depth = rayDepth * saturate(view.y + 0.05);
     float dist = length(_WorldSpaceCameraPos - v.positionWS);
+    // Distant terrain switches to coarse LOD triangles; color the water from the smooth baked
+    // seabed there and keep the exact depth buffer only up close (shoreline, refraction).
+    float smoothDepth = lerp(depth, v.waveData.w, saturate((dist - 15) / 40));
+    float smoothRay = smoothDepth / max(view.y, 0.05);
     float t = _Time.y;
-    float2 p = v.positionWS.xz;
+    float2 p = v.restXZ;
+    float2 pl = p - (_ChronoSeabedRect.xy + _ChronoSeabedRect.zw * 0.5);
 
     // Normals: vertex waves + large swell layers that never fade (far sea keeps moving) + chop up close.
     float3 n = normalize(v.normalWS);
@@ -231,8 +362,21 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
     if (high)
     {
      float nearChop = saturate(1 - dist / 60);
-     slope += (NoiseSlope(p * 0.9, float2(t * 0.35, t * 0.2)) + NoiseSlope(p * 2.6, float2(-t * 0.5, t * 0.45)) * 0.5) * _Ripples * nearChop;
+     // Third band: the same FFT patch at ~6 m tile for close-up chop (continuous, unlike value noise).
+     float c0, c1, cb; FFTFrame(t * 2.3 + 9.1, c0, c1, cb);
+     float2 uvC = float2(p.x * -0.5 - p.y * 0.866, p.x * 0.866 - p.y * 0.5) / (_FFTPatch * 0.093) + 0.61;
+     half2 chop = lerp(SAMPLE_TEXTURE2D_ARRAY(_FFTNormal, sampler_FFTNormal, uvC, c0).xy, SAMPLE_TEXTURE2D_ARRAY(_FFTNormal, sampler_FFTNormal, uvC, c1).xy, cb) * 2 - 1;
+     slope += chop * _Ripples * nearChop;
     }
+    float f0, f1, fb; FFTFrame(t, f0, f1, fb);
+    float g0, g1, gb; FFTFrame(t * 1.37 + 5.3, g0, g1, gb);
+    float2 uvA = p / _FFTPatch, uvB = BandB(p);
+    half4 nA = lerp(SAMPLE_TEXTURE2D_ARRAY(_FFTNormal, sampler_FFTNormal, uvA, f0), SAMPLE_TEXTURE2D_ARRAY(_FFTNormal, sampler_FFTNormal, uvA, f1), fb);
+    half4 nB = lerp(SAMPLE_TEXTURE2D_ARRAY(_FFTNormal, sampler_FFTNormal, uvB, g0), SAMPLE_TEXTURE2D_ARRAY(_FFTNormal, sampler_FFTNormal, uvB, g1), gb);
+    float fftOpen = _FFTStrength * saturate((v.waveData.w - _BreakDepth) / 3.0);
+    // Second band slopes are not scaled down with its tile: same steepness at a smaller size.
+    float2 fftSlope = ((nA.xy * 2 - 1) + (nB.xy * 2 - 1) * _FFTDetail) * fftOpen;
+    slope += fftSlope;
     n = normalize(n + float3(slope.x, 0, slope.y));
 
     half3 bottom;
@@ -244,16 +388,44 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
     }
     else bottom = SampleSceneColor(screenUV);
 
+    {
+     Light sunC = GetMainLight();
+     float3 toBottom = -view * (dist * bottomEye / max(surfaceEye, 1e-3));
+     float3 bottomWS = _WorldSpaceCameraPos + toBottom;
+     float below = max(v.positionWS.y - bottomWS.y, 0);
+     float2 cuv = (bottomWS.xz + sunC.direction.xz / max(sunC.direction.y, 0.2) * below) / (_FFTPatch * 0.5);
+     half c = lerp(SAMPLE_TEXTURE2D_ARRAY(_FFTNormal, sampler_FFTNormal, cuv, f0).a, SAMPLE_TEXTURE2D_ARRAY(_FFTNormal, sampler_FFTNormal, cuv, f1).a, fb);
+     half c2 = SAMPLE_TEXTURE2D_ARRAY(_FFTNormal, sampler_FFTNormal, cuv * 1.7 + 0.21, g0).a;
+     half caustic = pow(saturate(c * 6.0 * c2 * 6.0 / 3.0), 2.0);
+     // Fade with depth (light spreads) and at the very edge (too thin to focus).
+     half cFade = saturate(below / 0.3) * exp(-below / 3.5) * saturate(sunC.direction.y * 2);
+     bottom *= 1 + caustic * _Caustics * cFade * sunC.color * half3(1.0, 0.98, 0.9);
+    }
+
     Light sun = GetMainLight(TransformWorldToShadowCoord(v.positionWS));
-    half3 waterColor = lerp(_ShallowColor.rgb, _DeepColor.rgb, saturate(depth / _DepthRange));
+    half3 waterColor = lerp(_ShallowColor.rgb, _DeepColor.rgb, saturate(smoothDepth / _DepthRange));
     // Light passing through thin wave crests turns them greener and brighter.
     waterColor = lerp(waterColor, _ShallowColor.rgb * 1.25, saturate(v.waveData.y * 0.6 + v.waveData.x * 0.25));
-    half visibility = exp(-rayDepth / _Clarity);
+    half visibility = exp(-lerp(rayDepth, smoothRay, saturate((dist - 15) / 40)) / _Clarity);
+    // Breaking waves stir sand into suspension: the surf zone turns opaque grey-green.
+    half stirred = saturate(1.0 - v.waveData.w / (_SurfHeight * 2.6)) * saturate(v.waveData.w / 0.15);
+    waterColor = lerp(waterColor, half3(0.22, 0.32, 0.27), stirred * 0.75);
+    visibility *= 1.0 - stirred * 0.65;
     half3 lit = waterColor * (sun.color * saturate(sun.direction.y) * 0.55 + _SkyZenith.rgb * 0.6);
     half3 color = lerp(lit, bottom * lerp(_ShallowColor.rgb * 1.4, 1, 0.45), visibility);
 
     // Far away the surface is a blur of tilted facets: average reflectance drops below the
     // smooth-surface Fresnel, which keeps the distant sea a deep blue instead of milky.
+    {
+     float crestH = saturate(v.fftData.x / 0.4 + v.waveData.y * 0.8 + v.waveData.x * 0.3);
+     half back = pow(saturate(dot(view, -sun.direction) * 0.6 + 0.4), 4.0);
+     half side = pow(saturate(1 - abs(dot(n, view))), 2.0) * 0.35;
+     color += _SSSColor.rgb * sun.color * (back + side) * crestH * _SSSStrength * saturate(sun.direction.y + 0.2) * 0.5;
+     // The standing face of an unbroken wave is thin near its top: seen from the shore it glows green.
+     half faceToViewer = saturate(dot(normalize(v.normalWS), view));
+     half thinTop = saturate(v.waveData.y * 1.4);
+     color = lerp(color, _SSSColor.rgb * (sun.color * 0.9 + _SkyZenith.rgb * 0.6), thinTop * faceToViewer * 0.75 * _SSSStrength);
+    }
     half fresnel = (0.02 + 0.98 * pow(1 - saturate(dot(n, view)), 5)) * lerp(1.0, 0.62, saturate(dist / 350));
     float3 rd = reflect(-view, n);
     half3 refl = lerp(_SkyHorizon.rgb, _SkyZenith.rgb, pow(saturate(rd.y), 0.45));
@@ -269,28 +441,58 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
     color += sun.color * spec * sun.shadowAttenuation;
 
     // Foam.
-    float bubbles = 1 - Cells(p * 2.4 + t * float2(0.05, 0.11)) * 0.6 - Cells(p * 5.3 - t * 0.07) * 0.4;
-    float wisps = ValueNoise(p * 0.35 + t * 0.07) * 0.6 + ValueNoise(p * 1.3 - t * 0.1) * 0.4;
-    float pattern = bubbles * 0.55 + wisps * 0.45;
-    float rimBreak = 0.45 + 0.55 * ValueNoise(p * 0.18 + float2(t * 0.03, 0));
-    float rim = (1 - saturate(depth / _ShoreFoamDepth)) * rimBreak;
-    // White water: the breaking crest itself, then a foam sheet left behind it in the shallows.
-    float breakFoam = saturate(v.waveData.z * 1.6) * _BreakFoam;
-    float trail = saturate(1 - v.waveData.w / 1.6) * saturate(v.waveData.y + 0.35) * 0.55 * _BreakFoam;
+    float2 shoreDirF;
+    float4 surf = SurfFoamState(p, shoreDirF);
+    // Foam forms streaks along the wave crest: stretch the pattern across the shore direction.
+    // x: along the beach, y: across it (foam features are stretched along the crest).
+    float2 swellAxis = float2(cos(radians(_WaveDirection)), sin(radians(_WaveDirection)));
+    float2 acrossAlong = float2(dot(pl, float2(-swellAxis.y, swellAxis.x)), dot(pl, swellAxis));
+    float2 fq = float2(acrossAlong.x * 0.42, acrossAlong.y * 1.0);
+    float bubbles = 1 - Cells(fq * 6.0 + t * float2(0.06, 0.02)) * 0.4 - Cells(fq * 15.0 - t * 0.05) * 0.35 - Cells(fq * 34.0 + t * 0.08) * 0.25;
+    float wisps = ValueNoise(fq * 0.9 + t * 0.07) * 0.55 + ValueNoise(fq * 2.7 - t * 0.12) * 0.45;
+    float holes = ValueNoise(fq * 4.3 + t * 0.2);
+    float pattern = bubbles * 0.45 + wisps * 0.55 - (1 - holes) * 0.3;
+    float rimBreak = 0.45 + 0.55 * ValueNoise(pl * 0.18 + float2(t * 0.03, 0));
+    float rim = (1 - saturate(depth / _ShoreFoamDepth)) * rimBreak * 0.7;
+    float breakFoam = surf.z * _BreakFoam * (0.65 + 0.5 * wisps);
+    float swashLace = surf.w * _BreakFoam * 0.55 * (0.4 + 0.6 * holes);
+    float trail = 0;
     // Whitecaps drifting on the open sea, appearing and fading.
-    float capField = smoothstep(0.7, 0.86, ValueNoise(p * 0.035 + float2(t * 0.025, t * 0.015)));
-    float capPulse = smoothstep(0.55, 0.85, ValueNoise(p * 0.18 + float2(-t * 0.3, t * 0.12)));
+    float capField = smoothstep(0.7, 0.86, ValueNoise(pl * 0.035 + float2(t * 0.025, t * 0.015)));
+    float capPulse = smoothstep(0.55, 0.85, ValueNoise(pl * 0.18 + float2(-t * 0.3, t * 0.12)));
     float caps = capField * capPulse * _Whitecaps * saturate((dist - 30) / 120) * saturate(v.waveData.w / 6);
-    // Breaking water tears into streaks along the crest instead of solid blobs.
-    float streaks = ValueNoise(float2(dot(p, float2(0.8, 0.6)) * 0.9, dot(p, float2(-0.6, 0.8)) * 0.18) + t * 0.2);
-    breakFoam *= 0.55 + 0.6 * streaks;
-    trail *= 0.4 + 0.8 * wisps;
-    float foamMask = saturate(rim * 1.2 + breakFoam + trail + caps);
-    float coverage = foamMask * 0.58;
-    float foam = smoothstep(1.0 - coverage, 1.0 - coverage + 0.15, pattern) * saturate(foamMask * 3);
+    // Whitecaps where the FFT waves fold over (accumulated foam baked with build-up and decay).
+    float fftFoam = saturate((nA.z + nB.z * 0.6) * 0.7 * _FFTFoam * fftOpen) * saturate(1 - dist / 220);
+    float foamMask = saturate(rim + swashLace + caps + fftFoam);
+    float coverage = foamMask * 0.62;
+    float foam = smoothstep(1.0 - coverage, 1.0 - coverage + 0.35, pattern) * saturate(foamMask * 2.5) * 0.9;
+    // Dense core where the bore is freshly breaking.
+    // Broken water (the bore) is a broad band of churned foam with frayed, uneven density,
+    // not a thresholded pattern: density follows the whitewater amount and the bubble texture.
+    float churn = saturate(0.2 + bubbles * 0.5 + wisps * 0.5 - (1 - holes) * 0.35);
+    // The wave doesn't break evenly along the beach: sections peel, others stay glassy.
+    float sections = smoothstep(0.25, 0.65, ValueNoise(float2(acrossAlong.x * 0.07, t * 0.04)));
+    float coreFoam = ValueNoise(float2(acrossAlong.x * 0.9, acrossAlong.y * 2.2) + t * 0.3);
+    // Frayed edge: density falls off through the bubble pattern instead of a clean line.
+    // Whitewater keeps its bubbly structure: the amount of broken water decides how much of the
+    // bubble pattern survives (bubbles burst rather than fade), so bands break into clumps and lace.
+    float boreAmount = saturate(breakFoam * 1.15 * lerp(0.5, 1.0, sections)) * (0.55 + 0.45 * coreFoam);
+    float clumps = churn * 0.6 + bubbles * 0.4;
+    float bore = smoothstep(1.0 - boreAmount, 1.0 - boreAmount + 0.22, clumps);
+    foam = max(foam, bore * 0.97);
     foam = max(foam, caps * 0.8 * saturate(dist / 200));
-    color = lerp(color, _FoamColor.rgb * (sun.color * saturate(sun.direction.y) + _SkyZenith.rgb * 0.5) * 0.85, foam);
+    // Foam is lumpy: shade it from a fake height (bubble pattern) so clumps catch light and
+    // crevices go blue-grey, then add tiny bright sparkles of wet bubbles.
+    float fh = bubbles * 0.6 + wisps * 0.4;
+    float fhx = Cells(fq * 6.0 + float2(0.08, 0) + t * float2(0.06, 0.02)) - Cells(fq * 6.0 - float2(0.08, 0) + t * float2(0.06, 0.02));
+    // Thicker foam (more coverage) is more lumpy and self-shadowed; thin lace stays bright.
+    float fineLump = 1 - Cells(fq * 22.0 + t * 0.1);
+    half foamLight = saturate(0.35 + fh * 0.55 + fineLump * 0.35 - fhx * 1.1);
+    half3 foamLit = lerp(half3(0.4, 0.52, 0.62), half3(1.0, 1.0, 1.0), foamLight) * 0.9;
+    half sparkle = step(0.985, Hash1(floor(pl * 9.0) + floor(t * 12.0))) * foam;
+    color = lerp(color, _FoamColor.rgb * foamLit * (sun.color * saturate(sun.direction.y) * 0.9 + _SkyZenith.rgb * 0.55) + sparkle * sun.color * 0.6, foam);
 
+    color = ApplyJungleAtmosphere(color, v.positionWS, sun.color, sun.direction);
     half alpha = saturate(depth / _EdgeFade);
     return half4(color, alpha * lerp(1, 0.9, foam));
    }
