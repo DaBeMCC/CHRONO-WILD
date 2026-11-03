@@ -12,6 +12,13 @@ namespace ChronoWild.Prototype
         public DinoState state = DinoState.Patrol;
         public Animator animator;
 
+        [Header("Raptor presentation")]
+        [SerializeField, Range(-180f, 180f)] float modelYawOffset = 180f;
+        [SerializeField, Min(0f)] float rotationDegreesPerSecond = 360f;
+        [SerializeField, Min(0.1f)] float chaseAnimationSpeed = 1.4f;
+        [SerializeField, Min(0.1f)] float normalAnimationSpeed = 1f;
+        [SerializeField, Min(0f)] float animationBlendSeconds = 0.15f;
+
         [Header("Movement")]
         [Min(0f)] public float patrolSpeed = 1.8f;
         [Min(0f)] public float chaseSpeed = 6.2f;
@@ -43,6 +50,7 @@ namespace ChronoWild.Prototype
         {
             controller = GetComponent<CharacterController>();
             if (animator == null) animator = GetComponentInChildren<Animator>();
+            ApplyModelOrientation();
             patrolDirection = transform.forward;
             stateDuration = Random.Range(patrolTravelSeconds.x, patrolTravelSeconds.y);
         }
@@ -124,10 +132,12 @@ namespace ChronoWild.Prototype
             if (state == DinoState.HitRecovery && stateElapsed < 0.75f)
                 desiredAnimation = "Attack";
             PlayAnimation(desiredAnimation);
+            if (animator != null)
+                animator.speed = state == DinoState.Chase ? chaseAnimationSpeed : normalAnimationSpeed;
 
             if (direction.sqrMagnitude > 0.001f)
                 transform.rotation = Quaternion.RotateTowards(transform.rotation,
-                    Quaternion.LookRotation(direction), 360f * dt);
+                    Quaternion.LookRotation(direction), rotationDegreesPerSecond * dt);
             if (controller.isGrounded && verticalVelocity < 0f) verticalVelocity = -2f;
             verticalVelocity += -20f * dt;
             CollisionFlags flags = controller.Move((direction * speed + Vector3.up * verticalVelocity) * dt);
@@ -153,8 +163,26 @@ namespace ChronoWild.Prototype
         void PlayAnimation(string name, bool restart = false)
         {
             if (animator == null || (!restart && currentAnimation == name)) return;
-            animator.CrossFadeInFixedTime(name, restart ? 0.03f : 0.15f, 0, 0f);
+            animator.CrossFadeInFixedTime(name, restart ? 0.03f : animationBlendSeconds, 0, 0f);
             currentAnimation = name;
+        }
+
+        void ApplyModelOrientation()
+        {
+            // DinoAI's root +Z remains the movement direction; only the FBX visual is reversed.
+            if (animator != null && animator.transform != transform)
+                animator.transform.localRotation = Quaternion.Euler(0f, modelYawOffset, 0f);
+        }
+
+        void LateUpdate()
+        {
+            // Apply after Animator has evaluated the pose so imported root keys cannot undo it.
+            ApplyModelOrientation();
+        }
+
+        void OnValidate()
+        {
+            if (animator != null) ApplyModelOrientation();
         }
 
         void OnDrawGizmos()
