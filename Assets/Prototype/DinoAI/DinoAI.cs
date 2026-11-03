@@ -27,12 +27,12 @@ namespace ChronoWild.Prototype
         public Vector2 turnAngleDegrees = new Vector2(20f, 180f);
 
         [Header("Detection (Unity metres)")]
-        [Min(0f)] public float mediumRange = 12f;
-        [Min(0f)] public float closeRange = 4f;
-        [Min(0f)] public float escapeRange = 20f;
+        [Min(0f)] public float mediumRange = 24f;
+        [Min(0f)] public float closeRange = 12f;
+        [Min(0f)] public float escapeRange = 10f;
         [Min(0f)] public float alertSeconds = 3f;
-        [Min(0f)] public float escapeSeconds = 10f;
-        [Min(0f)] public float hitRange = 1.6f;
+        [Min(0f)] public float escapeSeconds = 5f;
+        [Min(0f)] public float hitRange = 1.4f;
         [Min(0f)] public float hitRecoverySeconds = 2f;
 
         CharacterController controller;

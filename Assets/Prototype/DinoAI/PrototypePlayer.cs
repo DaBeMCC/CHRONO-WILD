@@ -7,8 +7,8 @@ namespace ChronoWild.Prototype
     public sealed class PrototypePlayer : MonoBehaviour
     {
         [Header("Movement")]
-        [Min(0f)] public float walkSpeed = 4f;
-        [Min(0f)] public float sprintSpeed = 7f;
+        [Min(0f)] public float walkSpeed = 5f;
+        [Min(0f)] public float sprintSpeed = 8.5f;
         [Min(0f)] public float mouseSensitivity = 0.12f;
         [Range(0f, 1f)] public float stunnedSpeedMultiplier = 0.5f;
         [Min(0f)] public float stunDuration = 0.6f;

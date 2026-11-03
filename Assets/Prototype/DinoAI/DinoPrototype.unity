@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 241676895}
   - component: {fileID: 241676894}
+  - component: {fileID: 241676896}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -216,6 +217,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &241676896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 241676893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &355083106
 GameObject:
   m_ObjectHideFlags: 0
@@ -460,8 +490,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e17b403eeb32026b78e11591744d2529, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Prototype.PrototypePlayer
-  walkSpeed: 4
-  sprintSpeed: 7
+  walkSpeed: 5
+  sprintSpeed: 8.5
   mouseSensitivity: 0.12
   stunnedSpeedMultiplier: 0.5
   stunDuration: 0.6
@@ -656,17 +686,22 @@ MonoBehaviour:
   player: {fileID: 517665973}
   state: 0
   animator: {fileID: 2982991423049220556}
+  modelYawOffset: 180
+  rotationDegreesPerSecond: 360
+  chaseAnimationSpeed: 1.4
+  normalAnimationSpeed: 1
+  animationBlendSeconds: 0.15
   patrolSpeed: 1.8
   chaseSpeed: 6.2
   patrolTravelSeconds: {x: 3, y: 6}
   patrolRestSeconds: {x: 3, y: 6}
   turnAngleDegrees: {x: 20, y: 180}
-  mediumRange: 12
-  closeRange: 4
-  escapeRange: 20
+  mediumRange: 24
+  closeRange: 12
+  escapeRange: 10
   alertSeconds: 3
-  escapeSeconds: 10
-  hitRange: 1.6
+  escapeSeconds: 5
+  hitRange: 1.4
   hitRecoverySeconds: 2
 --- !u!143 &889840414
 CharacterController:
@@ -1160,17 +1195,22 @@ MonoBehaviour:
   player: {fileID: 517665973}
   state: 0
   animator: {fileID: 4170832006238671696}
+  modelYawOffset: 180
+  rotationDegreesPerSecond: 360
+  chaseAnimationSpeed: 1.4
+  normalAnimationSpeed: 1
+  animationBlendSeconds: 0.15
   patrolSpeed: 1.8
   chaseSpeed: 6.2
   patrolTravelSeconds: {x: 3, y: 6}
   patrolRestSeconds: {x: 3, y: 6}
   turnAngleDegrees: {x: 20, y: 180}
-  mediumRange: 12
-  closeRange: 4
-  escapeRange: 20
+  mediumRange: 24
+  closeRange: 12
+  escapeRange: 10
   alertSeconds: 3
-  escapeSeconds: 10
-  hitRange: 1.6
+  escapeSeconds: 5
+  hitRange: 1.4
   hitRecoverySeconds: 2
 --- !u!143 &1659645084
 CharacterController:
@@ -1470,17 +1510,22 @@ MonoBehaviour:
   player: {fileID: 517665973}
   state: 0
   animator: {fileID: 2332611802178147485}
+  modelYawOffset: 180
+  rotationDegreesPerSecond: 360
+  chaseAnimationSpeed: 1.4
+  normalAnimationSpeed: 1
+  animationBlendSeconds: 0.15
   patrolSpeed: 1.8
   chaseSpeed: 6.2
   patrolTravelSeconds: {x: 3, y: 6}
   patrolRestSeconds: {x: 3, y: 6}
   turnAngleDegrees: {x: 20, y: 180}
-  mediumRange: 12
-  closeRange: 4
-  escapeRange: 20
+  mediumRange: 24
+  closeRange: 12
+  escapeRange: 10
   alertSeconds: 3
-  escapeSeconds: 10
-  hitRange: 1.6
+  escapeSeconds: 5
+  hitRange: 1.4
   hitRecoverySeconds: 2
 --- !u!143 &1844426844
 CharacterController:
@@ -8263,7 +8308,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8193434190434311845}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -8874,7 +8919,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8686951143109299188}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -9576,7 +9621,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7003272817700359225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
