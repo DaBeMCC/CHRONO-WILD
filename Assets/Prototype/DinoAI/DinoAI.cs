@@ -8,6 +8,8 @@ namespace ChronoWild.Prototype
         public enum DinoState { Patrol, Rest, Alert, Chase, HitRecovery }
 
         [Header("Target")]
+        [Tooltip("Target used by detection and pursuit. Assign the scene player's Transform.")]
+        public Transform target;
         public PrototypePlayer player;
         public DinoState state = DinoState.Patrol;
         public Animator animator;
@@ -50,6 +52,7 @@ namespace ChronoWild.Prototype
         {
             controller = GetComponent<CharacterController>();
             if (animator == null) animator = GetComponentInChildren<Animator>();
+            if (target == null && player != null) target = player.transform;
             ApplyModelOrientation();
             patrolDirection = transform.forward;
             stateDuration = Random.Range(patrolTravelSeconds.x, patrolTravelSeconds.y);
@@ -57,10 +60,10 @@ namespace ChronoWild.Prototype
 
         void Update()
         {
-            if (player == null) return;
+            if (target == null) return;
             float dt = Time.deltaTime;
             stateElapsed += dt;
-            Vector3 toPlayer = player.transform.position - transform.position;
+            Vector3 toPlayer = target.position - transform.position;
             toPlayer.y = 0f;
             float distance = toPlayer.magnitude;
 
@@ -107,7 +110,7 @@ namespace ChronoWild.Prototype
                 case DinoState.Chase:
                     if (distance <= hitRange)
                     {
-                        player.ReceiveHit();
+                        if (player != null) player.ReceiveHit();
                         Enter(DinoState.HitRecovery);
                     }
                     direction = toPlayer.normalized;
