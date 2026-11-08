@@ -43,6 +43,7 @@ Shader "CHRONO WILD/Water/Jungle Puddle"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
    #include "Assets/_MyShaders/Environment/JungleAtmosphere.hlsl"
+   #include "Assets/_MyShaders/Water/RippleSample.hlsl"
 
    CBUFFER_START(UnityPerMaterial)
    float4 _Absorption; half4 _ScatterColor; half _Turbidity; half _Refraction; half _Roughness;
@@ -50,6 +51,7 @@ Shader "CHRONO WILD/Water/Jungle Puddle"
    float _SSRSteps; float _SSRDistance; float _SSRThickness; half _ProbeDim; half _ShoreSoftness; half _WetEdgeDarkening;
    CBUFFER_END
    float _ChronoQuality;
+   float _CW_EnvDim;
 
    struct Attributes { float4 positionOS:POSITION; half4 color:COLOR; };
    struct Varyings { float4 positionCS:SV_POSITION; float3 positionWS:TEXCOORD0; half edge:TEXCOORD1; };
@@ -87,7 +89,8 @@ Shader "CHRONO WILD/Water/Jungle Puddle"
     float2 slope = NoiseD(p * _RippleScale + float2(t, t * 0.6)).yz * 0.6
                  + NoiseD(p * _RippleScale * 2.3 - float2(t * 0.8, -t * 1.1)).yz * 0.3
                  + NoiseD(p * _RippleScale * 5.1 + float2(-t * 1.7, t * 0.9)).yz * 0.1;
-    return normalize(half3(-slope.x * _RippleStrength * 0.25, 1, -slope.y * _RippleStrength * 0.25));
+    slope = slope * _RippleStrength * 0.25 + CW_RainSlope(p);
+    return normalize(half3(-slope.x, 1, -slope.y));
    }
 
    float RayDepthDiff(float3 p, out float2 uv)
@@ -164,7 +167,7 @@ Shader "CHRONO WILD/Water/Jungle Puddle"
     // Reflection: screen-space first, baked probe where the ray misses.
     half fresnel = 0.02 + 0.98 * pow(1 - saturate(dot(n, view)), 5);
     float3 reflDir = reflect(-view, n);
-    half3 probe = GlossyEnvironmentReflection(reflDir, v.positionWS, _Roughness, 1, screenUV) * _ProbeDim;
+    half3 probe = GlossyEnvironmentReflection(reflDir, v.positionWS, _Roughness, 1, screenUV) * _ProbeDim * (1.0 - _CW_EnvDim);
     float jitter = InterleavedGradientNoise(v.positionCS.xy, 0);
     half4 ssr = _ChronoQuality > 0.5 ? TraceReflection(v.positionWS, reflDir, jitter) : half4(0, 0, 0, 0);
     half3 reflection = lerp(probe, ssr.rgb, ssr.a) * _ReflectionStrength;

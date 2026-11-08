@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Granite_Lichen
+  m_Shader: {fileID: 4800000, guid: e2ae775e43039e5b3bc82cd1f6f0eba2, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _POM
+  - _TRIPLANAR
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: d38e205c1daec8176bd29a233012577d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: c696d3a8df28051f0a0ed2bc82e4d73d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HeightAO:
+        m_Texture: {fileID: 2800000, guid: 1118415ba3c37f2cc8b5d90d21f603b9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _EdgeClip: 0
+    - _Height: 0.023
+    - _Moss: 0.55
+    - _NormalStrength: 1
+    - _PomDistance: 10
+    - _Tiling: 0.42
+    - _Triplanar: 1
+    - _UsePOM: 1
+    - _Wetness: 0.08
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MossColor: {r: 0.36, g: 0.38, b: 0.26, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

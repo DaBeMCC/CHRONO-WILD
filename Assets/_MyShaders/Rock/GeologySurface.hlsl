@@ -8,6 +8,7 @@
  float4 _BaseMap_ST;half4 _BaseColor;half4 _MossColor;
  float _Tiling,_Height,_PomDistance;half _NormalStrength,_UsePOM,_Triplanar,_Wetness,_Moss,_EdgeClip;
  CBUFFER_END
+ float _CW_RainWet;
  struct Attributes{float4 positionOS:POSITION;float3 normalOS:NORMAL;float4 tangentOS:TANGENT;float2 uv:TEXCOORD0;half4 color:COLOR;UNITY_VERTEX_INPUT_INSTANCE_ID};
  struct Varyings{float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;half3 normalWS:TEXCOORD1;half4 tangentWS:TEXCOORD2;float2 uv:TEXCOORD3;half4 color:TEXCOORD4;half fog:TEXCOORD5;UNITY_VERTEX_INPUT_INSTANCE_ID UNITY_VERTEX_OUTPUT_STEREO};
  Varyings GeoVertex(Attributes v){Varyings o=(Varyings)0;UNITY_SETUP_INSTANCE_ID(v);UNITY_TRANSFER_INSTANCE_ID(v,o);UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);o.positionWS=TransformObjectToWorld(v.positionOS.xyz);o.positionCS=TransformWorldToHClip(o.positionWS);VertexNormalInputs n=GetVertexNormalInputs(v.normalOS,v.tangentOS);o.normalWS=n.normalWS;o.tangentWS=half4(n.tangentWS,v.tangentOS.w*GetOddNegativeScale());o.uv=v.uv;o.color=v.color;o.fog=ComputeFogFactor(o.positionCS.z);return o;}
@@ -51,7 +52,7 @@
    normal=normalize(n+float3(tn.x,0,-tn.y));
   #endif
   float macro=sin(v.positionWS.x*.63+sin(v.positionWS.z*.31)*2)*sin(v.positionWS.z*.47+v.positionWS.y*.75)*.5+.5;
-  half wet=_Wetness*lerp(.35,1,macro);half moss=_Moss*smoothstep(.30,.80,n.y)*smoothstep(.25,.68,macro)*(1-wet*.3);
+  half wet=max(_Wetness*lerp(.35,1,macro),_CW_RainWet*.85);half moss=_Moss*smoothstep(.30,.80,n.y)*smoothstep(.25,.68,macro)*(1-wet*.3);
   albedo*=lerp(.86,1.07,macro);albedo=lerp(albedo,albedo*_MossColor.rgb*2.1,moss);
   albedo*=lerp(1,.67,wet);
   s=(SurfaceData)0;s.albedo=albedo*_BaseColor.rgb;s.alpha=1;s.metallic=0;s.specular=half3(.04,.04,.04);s.smoothness=lerp(1-mask.b,.73,wet)*lerp(1,.48,moss);s.occlusion=lerp(.6,1,mask.g);s.normalTS=half3(0,0,1);

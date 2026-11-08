@@ -1,0 +1,98 @@
+// Interactive water surface around the player: a 2D wave equation on a scrolling grid, plus the
+// height probes that let CPU physics follow the surface the player sees.
+#pragma kernel RippleStep
+#pragma kernel RippleSplat
+#pragma kernel ProbeHeights
+
+#include "WaterHeight.hlsl"
+
+Texture2D<float4> _RippleSrc;       // x height, y vertical velocity, z foam
+RWTexture2D<float4> _RippleDst;
+RWTexture2D<int> _Impacts;          // velocity kicks in 1/1000 m/s, added by anything that hits the water
+
+int _Resolution;
+int _ScrollX, _ScrollY;
+float4 _RippleOrigin;               // x, z of the grid corner, z = world size of a texel
+float _Dt, _MaxWaveSpeed, _Damping;
+
+float4 Fetch(int2 t)
+{
+    if (t.x < 0 || t.y < 0 || t.x >= _Resolution || t.y >= _Resolution)
+        return 0;
+    return _RippleSrc.Load(int3(t, 0));
+}
+
+[numthreads(32, 32, 1)]
+void RippleStep(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _Resolution || (int)id.y >= _Resolution)
+        return;
+    int2 p = int2(id.xy);
+    int2 s = p + int2(_ScrollX, _ScrollY);
+    float dx = _RippleOrigin.z;
+    float2 world = _RippleOrigin.xy + (float2(p) + 0.5) * dx;
+
+    float level = StillLevelAt(world);
+    float depth = level - TerrainHeightAt(world);
+    int impact = 0;
+    InterlockedExchange(_Impacts[p], 0, impact);
+    if (depth <= 0.0)
+    {
+        _RippleDst[p] = 0;
+        return;
+    }
+
+    float4 c = Fetch(s);
+    float laplacian = Fetch(s + int2(1, 0)).x + Fetch(s - int2(1, 0)).x + Fetch(s + int2(0, 1)).x + Fetch(s - int2(0, 1)).x - 4.0 * c.x;
+    // Shallow-water wave speed: ripples slow down and bunch up as they reach the shore.
+    float speed = clamp(sqrt(9.81 * depth), 0.7, _MaxWaveSpeed);
+    float v = c.y + speed * speed * laplacian / (dx * dx) * _Dt;
+    float kick = impact * 0.001;
+    v = (v + kick) * _Damping;
+    float h = c.x + v * _Dt;
+
+    // Foam appears where the surface is thrown around hard and slowly dissolves.
+    float foam = max(c.z - _Dt * 0.7, 0.0) + saturate(abs(v) - 1.5) * _Dt * 1.5 + saturate(abs(kick) * 0.02);
+
+    // Absorbing border so waves leave the grid instead of bouncing back.
+    int border = min(min(p.x, p.y), min(_Resolution - 1 - p.x, _Resolution - 1 - p.y));
+    float sponge = saturate(border / 24.0);
+    sponge = lerp(0.9, 1.0, sponge);
+    _RippleDst[p] = float4(clamp(h * sponge, -1.5, 1.5), clamp(v * sponge, -30.0, 30.0), saturate(foam) * sponge, 0.0);
+}
+
+int2 _SplatMin;
+int2 _SplatSize;
+float2 _SplatCenter;                // in texels
+float _SplatRadius;                 // in texels
+int _SplatKick;                     // 1/1000 m/s at the centre
+
+[numthreads(16, 16, 1)]
+void RippleSplat(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _SplatSize.x || (int)id.y >= _SplatSize.y)
+        return;
+    int2 p = _SplatMin + int2(id.xy);
+    if (p.x < 0 || p.y < 0 || p.x >= _Resolution || p.y >= _Resolution)
+        return;
+    float2 d = (float2(p) + 0.5 - _SplatCenter) / max(_SplatRadius, 0.5);
+    float weight = exp(-dot(d, d) * 2.5);
+    InterlockedAdd(_Impacts[p], (int)(_SplatKick * weight));
+}
+
+StructuredBuffer<float2> _ProbeIn;
+RWStructuredBuffer<float> _ProbeOut;
+int _ProbeCount;
+
+[numthreads(32, 1, 1)]
+void ProbeHeights(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _ProbeCount)
+        return;
+    float2 xz = _ProbeIn[id.x];
+    float2 uv = (xz - _RippleOrigin.xy) / (_RippleOrigin.z * _Resolution);
+    float ripple = _RippleSrc.SampleLevel(sampler_LinearClamp, uv, 0).x;
+    if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0)
+        ripple = 0.0;
+    _ProbeOut[id.x] = WaterHeightAt(xz) + ripple;
+}

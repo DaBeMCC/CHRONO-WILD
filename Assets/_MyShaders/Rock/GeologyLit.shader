@@ -34,6 +34,7 @@ Shader "CHRONO WILD/Environment/Geology Lit"
    #pragma shader_feature_local _POM
    #pragma shader_feature_local _TRIPLANAR
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile_fog
    #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
    #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
@@ -65,6 +66,7 @@ Shader "CHRONO WILD/Environment/Geology Lit"
    #pragma vertex ShadowVertex
    #pragma fragment DepthFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
    float3 _LightDirection;float3 _LightPosition;
    Varyings ShadowVertex(Attributes v){Varyings o=GeoVertex(v);float3 light=_LightDirection;
@@ -89,6 +91,7 @@ Shader "CHRONO WILD/Environment/Geology Lit"
    #pragma vertex GeoVertex
    #pragma fragment DepthFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    half4 DepthFragment(Varyings v):SV_Target{Edge(v);return 0;}
    ENDHLSL
   }
@@ -102,6 +105,7 @@ Shader "CHRONO WILD/Environment/Geology Lit"
    #pragma shader_feature_local _POM
    #pragma shader_feature_local _TRIPLANAR
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
    half4 NormalFragment(Varyings v):SV_Target{Edge(v);SurfaceData s;half3 n;Surface(v,s,n);
    #if defined(_GBUFFER_NORMALS_OCT)

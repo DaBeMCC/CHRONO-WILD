@@ -25,6 +25,7 @@ namespace ChronoWild.Diagnostics
         PointOfInterest[] pois;
         readonly StringBuilder text = new StringBuilder(512);
         GUIStyle style;
+        float maxMouse;
 
         void Start()
         {
@@ -63,16 +64,22 @@ namespace ChronoWild.Diagnostics
                 Profiler.GetTotalAllocatedMemoryLong() / 1048576f, Profiler.GetTotalReservedMemoryLong() / 1048576f);
             text.AppendFormat("Resolution: {0}x{1}  Quality: {2}\n", Screen.width, Screen.height, QualitySettings.names[QualitySettings.GetQualityLevel()]);
 
+            var clock = DayNightCycle.Instance;
+            if (clock != null)
+                text.AppendFormat("Time: {0}  (Day {1})\n", clock.TimeText, clock.day);
+
             if (player != null)
             {
                 Vector3 p = player.transform.position;
                 text.AppendFormat("Pos: {0:0} {1:0.0} {2:0}  Slope: {3:0}°\n", p.x, p.y, p.z, player.GroundSlope);
                 text.AppendFormat("Route: {0:0} m in {1:0.0} s ({2})  [T resets]\n",
                     player.DistanceTravelled, player.TimerSeconds, player.IsRunning ? "running" : "walking");
+                maxMouse = Mathf.Max(maxMouse * 0.97f, player.LastMouseDelta.magnitude);
+                text.AppendFormat("Mouse: {0:0.0}  Cursor: {1}  Focus: {2}\n", maxMouse, Cursor.lockState, Application.isFocused ? "yes" : "no");
                 AppendNearestPoi(p);
             }
 
-            GUI.Box(new Rect(10, 10, 430, 120), text.ToString(), style);
+            GUI.Box(new Rect(10, 10, 430, 160), text.ToString(), style);
         }
 
         void AppendNearestPoi(Vector3 position)

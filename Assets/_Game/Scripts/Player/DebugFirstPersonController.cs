@@ -16,6 +16,7 @@ namespace ChronoWild.Player
         public float runSpeed = 7f;
         public float jumpHeight = 1.1f;
         public float gravity = -20f;
+        public float slideSpeed = 7f;
         public float lookSensitivity = 0.12f;
         public Transform cameraPivot;
 
@@ -23,11 +24,14 @@ namespace ChronoWild.Player
         public float TimerSeconds { get; private set; }
         public bool IsRunning { get; private set; }
         public float GroundSlope { get; private set; }
+        /// <summary>Raw mouse movement this frame, shown by the info panel.</summary>
+        public Vector2 LastMouseDelta { get; private set; }
 
         CharacterController controller;
         float pitch;
         float verticalVelocity;
         Vector3 lastPosition;
+        Vector3 groundNormal = Vector3.up;
 
         void Awake()
         {
@@ -61,6 +65,9 @@ namespace ChronoWild.Player
                 Cursor.visible = false;
             }
 
+            if (mouse != null)
+                LastMouseDelta = mouse.delta.ReadValue();
+
             if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
                 Vector2 look = mouse.delta.ReadValue() * lookSensitivity;
@@ -90,6 +97,10 @@ namespace ChronoWild.Player
             verticalVelocity += gravity * Time.deltaTime;
             move.y = verticalVelocity;
 
+            // Ground too steep to stand on slides the player down instead of pinning them in place.
+            if (controller.isGrounded && GroundSlope > controller.slopeLimit + 1f)
+                move += Vector3.ProjectOnPlane(Vector3.down, groundNormal).normalized * slideSpeed;
+
             controller.Move(move * Time.deltaTime);
 
             if (keyboard.tKey.wasPressedThisFrame)
@@ -107,6 +118,7 @@ namespace ChronoWild.Player
         void OnControllerColliderHit(ControllerColliderHit hit)
         {
             GroundSlope = Vector3.Angle(hit.normal, Vector3.up);
+            groundNormal = hit.normal;
         }
     }
 }

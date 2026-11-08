@@ -72,6 +72,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
    #pragma vertex FoliageVertex
    #pragma fragment FoliageFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile _ LOD_FADE_CROSSFADE
    #pragma multi_compile_fog
    #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
@@ -110,6 +111,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
    #pragma vertex ShadowVertex
    #pragma fragment ShadowFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile _ LOD_FADE_CROSSFADE
    #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
    float3 _LightDirection;float3 _LightPosition;
@@ -139,6 +141,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
    #pragma vertex FoliageVertex
    #pragma fragment DepthFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile _ LOD_FADE_CROSSFADE
    half4 DepthFragment(Varyings v):SV_Target{LeafSampleFade(v);return 0;}
    ENDHLSL
@@ -151,6 +154,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
    #pragma vertex FoliageVertex
    #pragma fragment NormalsFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile _ LOD_FADE_CROSSFADE
    #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
    half4 NormalsFragment(Varyings v,FRONT_FACE_TYPE face:FRONT_FACE_SEMANTIC):SV_Target

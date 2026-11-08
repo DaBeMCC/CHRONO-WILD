@@ -69,7 +69,7 @@ Shader "CHRONO WILD/Environment/Ground Patch SPOM"
   float3 b = cross(n.normalWS, n.tangentWS) * v.tangentOS.w;
   float3x3 tbn = float3x3(n.tangentWS, b, n.normalWS);
   // Relief is authored in object units; express view and light vectors in quad-uv space.
-  float3 scale = float3(length(unity_ObjectToWorld._m00_m10_m20), length(unity_ObjectToWorld._m01_m11_m21), length(unity_ObjectToWorld._m02_m12_m22));
+  float3 scale = float3(length(UNITY_MATRIX_M._m00_m10_m20), length(UNITY_MATRIX_M._m01_m11_m21), length(UNITY_MATRIX_M._m02_m12_m22));
   float3 viewWS = GetWorldSpaceViewDir(p.positionWS);
   o.viewTS = mul(tbn, viewWS) / float3(scale.x, scale.z, scale.x);
   o.lightTS = mul(tbn, _MainLightPosition.xyz) / float3(scale.x, scale.z, scale.x);
@@ -112,7 +112,7 @@ Shader "CHRONO WILD/Environment/Ground Patch SPOM"
  // Depth of the hit point: the quad sits at the top of the relief, the floor lies _Depth below.
  float PatchDepth(Varyings i, float hitLayer)
  {
-  float3 scale = float3(length(unity_ObjectToWorld._m00_m10_m20), length(unity_ObjectToWorld._m01_m11_m21), length(unity_ObjectToWorld._m02_m12_m22));
+  float3 scale = float3(length(UNITY_MATRIX_M._m00_m10_m20), length(UNITY_MATRIX_M._m01_m11_m21), length(UNITY_MATRIX_M._m02_m12_m22));
   float down = (1 - hitLayer) * _Depth * scale.x;
   float3 viewDir = normalize(GetWorldSpaceViewDir(i.positionWS));
   float3 hitWS = i.positionWS - viewDir * down / max(dot(viewDir, normalize(i.normalWS)), 0.08);
@@ -133,6 +133,7 @@ Shader "CHRONO WILD/Environment/Ground Patch SPOM"
    #pragma vertex PatchVertex
    #pragma fragment PatchFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile_fog
    #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
    #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
@@ -202,6 +203,7 @@ Shader "CHRONO WILD/Environment/Ground Patch SPOM"
    #pragma vertex PatchVertex
    #pragma fragment DepthFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    half4 DepthFragment(Varyings i, out float depthOut : SV_Depth) : SV_Target
    {
     float2 uv; float hitLayer, h;
@@ -219,6 +221,7 @@ Shader "CHRONO WILD/Environment/Ground Patch SPOM"
    #pragma vertex PatchVertex
    #pragma fragment NormalsFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
    half4 NormalsFragment(Varyings i, out float depthOut : SV_Depth) : SV_Target
    {

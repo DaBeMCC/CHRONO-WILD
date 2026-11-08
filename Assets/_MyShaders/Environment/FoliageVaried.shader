@@ -12,6 +12,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Varied"
   _WindStrength("Breeze (meters)",Range(0,.3))=.05
   _Variation("Plant Color Variation",Range(0,1))=.25
   _Age("Leaf Weathering",Range(0,1))=.2
+  _GustStrength("Wind Gust Waves (meters)",Range(0,1))=0
  }
  HLSLINCLUDE
  #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -19,23 +20,43 @@ Shader "CHRONO WILD/Vegetation/Foliage Varied"
  TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
  TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
  CBUFFER_START(UnityPerMaterial)
- float4 _BaseMap_ST;half4 _BaseColor;half _BumpScale;half _Cutoff;half _Smoothness;half _Transmission;half _WindStrength;half _Variation;half _Age;
+ float4 _BaseMap_ST;half4 _BaseColor;half _BumpScale;half _Cutoff;half _Smoothness;half _Transmission;half _WindStrength;half _Variation;half _Age;half _GustStrength;
  CBUFFER_END
+ // xy wind direction, z gust speed (m/s), w gust wavelength (m). Set by IslandBiomes.
+ float4 _CW_Wind;
+ float _CW_RainWet;
  struct Attributes {float4 positionOS:POSITION;float3 normalOS:NORMAL;float4 tangentOS:TANGENT;float2 uv:TEXCOORD0;UNITY_VERTEX_INPUT_INSTANCE_ID};
- struct Varyings {float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;half3 normalWS:TEXCOORD1;half4 tangentWS:TEXCOORD2;float2 uv:TEXCOORD3;half fog:TEXCOORD4;float4 shadowCoord:TEXCOORD5;UNITY_VERTEX_INPUT_INSTANCE_ID UNITY_VERTEX_OUTPUT_STEREO};
- float3 WindPosition(Attributes v)
+ struct Varyings {float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;half3 normalWS:TEXCOORD1;half4 tangentWS:TEXCOORD2;float2 uv:TEXCOORD3;half fog:TEXCOORD4;float4 shadowCoord:TEXCOORD5;half gust:TEXCOORD6;UNITY_VERTEX_INPUT_INSTANCE_ID UNITY_VERTEX_OUTPUT_STEREO};
+ // Large gust fronts travelling across the field (Ghost of Tsushima style): a slow wave along the
+ // wind direction, broken up by drifting noise so fronts arrive in uneven patches.
+ half GustAt(float2 xz)
+ {
+  float2 dir=_CW_Wind.xy;
+  float along=dot(xz,dir)/max(_CW_Wind.w,1.0);
+  float front=sin((along-_Time.y*_CW_Wind.z/max(_CW_Wind.w,1.0))*6.2831)*0.5+0.5;
+  float2 q=xz*0.035-dir*_Time.y*0.12;
+  float patchy=sin(q.x*1.7+sin(q.y*1.3))*sin(q.y*1.9+sin(q.x*0.7)+1.3)*0.5+0.5;
+  return (half)(pow(front,3.0)*lerp(0.35,1.0,patchy));
+ }
+ float3 WindPosition(Attributes v,out half gust)
  {
   float3 p=TransformObjectToWorld(v.positionOS.xyz);
-  float height=max(0,p.y-TransformObjectToWorld(float3(0,0,0)).y);
+  float3 pivot=TransformObjectToWorld(float3(0,0,0));
+  float height=max(0,p.y-pivot.y);
   float phase=dot(p.xz,float2(.27,.19))+_Time.y*.9;
   float weight=saturate(height/4)*saturate(v.uv.y);
   p.xz+=float2(.93,.37)*(sin(phase)+sin(phase*1.73)*.25)*_WindStrength*weight;
+  gust=GustAt(pivot.xz)*_GustStrength;
+  // Bend toward the wind, lowering the tip slightly so blades arc instead of shearing.
+  float bend=gust*saturate(height/1.5)*saturate(v.uv.y+0.2);
+  p.xz+=_CW_Wind.xy*bend;
+  p.y-=bend*bend*0.35;
   return p;
  }
  Varyings FoliageVertex(Attributes v)
  {
   Varyings o=(Varyings)0;UNITY_SETUP_INSTANCE_ID(v);UNITY_TRANSFER_INSTANCE_ID(v,o);UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-  o.positionWS=WindPosition(v);o.positionCS=TransformWorldToHClip(o.positionWS);
+  half gust;o.positionWS=WindPosition(v,gust);o.gust=gust;o.positionCS=TransformWorldToHClip(o.positionWS);
   VertexNormalInputs n=GetVertexNormalInputs(v.normalOS,v.tangentOS);o.normalWS=n.normalWS;o.tangentWS=half4(n.tangentWS,v.tangentOS.w*GetOddNegativeScale());
   o.uv=v.uv*_BaseMap_ST.xy+_BaseMap_ST.zw;o.fog=ComputeFogFactor(o.positionCS.z);
   #if defined(_MAIN_LIGHT_SHADOWS_SCREEN)
@@ -74,6 +95,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Varied"
    #pragma vertex FoliageVertex
    #pragma fragment FoliageFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile _ LOD_FADE_CROSSFADE
    #pragma multi_compile_fog
    #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
@@ -87,6 +109,8 @@ Shader "CHRONO WILD/Vegetation/Foliage Varied"
    {
     UNITY_SETUP_INSTANCE_ID(v);UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(v);
     half4 leaf=LeafSampleFade(v);half3 n=LeafNormal(v,IS_FRONT_VFACE(face,1.0h,-1.0h));
+    // Bent leaves show their paler, sheen-catching undersides as a gust passes.
+    leaf.rgb*=1.0h+saturate(v.gust*1.6h)*0.45h;
     InputData data=(InputData)0;data.positionWS=v.positionWS;data.normalWS=n;data.viewDirectionWS=GetWorldSpaceNormalizeViewDir(v.positionWS);data.shadowCoord=v.shadowCoord;data.fogCoord=v.fog;
     #if defined(PROBE_VOLUMES_L1)||defined(PROBE_VOLUMES_L2)
     data.bakedGI=SampleProbeVolumePixel(SampleSH(n),GetAbsolutePositionWS(v.positionWS),n,GetWorldSpaceNormalizeViewDir(v.positionWS),v.positionCS.xy);
@@ -99,7 +123,8 @@ Shader "CHRONO WILD/Vegetation/Foliage Varied"
     float spotting=sin(v.uv.x*89+sin(v.uv.y*31)*2)*sin(v.uv.y*67+seed*17);
     float age=smoothstep(.82,1,v.uv.y)*smoothstep(.15,.85,seed)*_Age+smoothstep(.93,1,spotting)*_Age*.18;
     leaf.rgb=lerp(leaf.rgb,leaf.rgb*half3(1.3,.86,.48),age);
-    SurfaceData surface=(SurfaceData)0;surface.albedo=leaf.rgb;surface.alpha=1;surface.metallic=0;surface.specular=half3(.04,.04,.04);surface.smoothness=_Smoothness;surface.normalTS=half3(0,0,1);surface.occlusion=1;
+    leaf.rgb*=lerp(1,.8,_CW_RainWet);
+    SurfaceData surface=(SurfaceData)0;surface.albedo=leaf.rgb;surface.alpha=1;surface.metallic=0;surface.specular=half3(.04,.04,.04);surface.smoothness=lerp(_Smoothness,.55,_CW_RainWet);surface.normalTS=half3(0,0,1);surface.occlusion=1;
     half4 color=UniversalFragmentPBR(data,surface);
     Light sun=GetMainLight(v.shadowCoord);
     half back=pow(saturate(dot(-sun.direction,data.viewDirectionWS)),3)*.7+saturate(dot(-n,sun.direction))*.3;
@@ -117,6 +142,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Varied"
    #pragma vertex ShadowVertex
    #pragma fragment ShadowFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile _ LOD_FADE_CROSSFADE
    #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
    float3 _LightDirection;float3 _LightPosition;
@@ -146,6 +172,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Varied"
    #pragma vertex FoliageVertex
    #pragma fragment DepthFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile _ LOD_FADE_CROSSFADE
    half4 DepthFragment(Varyings v):SV_Target{LeafSampleFade(v);return 0;}
    ENDHLSL
@@ -158,6 +185,7 @@ Shader "CHRONO WILD/Vegetation/Foliage Varied"
    #pragma vertex FoliageVertex
    #pragma fragment NormalsFragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile _ LOD_FADE_CROSSFADE
    #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
    half4 NormalsFragment(Varyings v,FRONT_FACE_TYPE face:FRONT_FACE_SEMANTIC):SV_Target

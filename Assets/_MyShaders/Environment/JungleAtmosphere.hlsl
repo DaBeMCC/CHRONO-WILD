@@ -13,11 +13,32 @@ float4 _JungleFogRegion;      // xy center, z radius, w falloff
 float _JungleFogOpenDensity;
 float4 _JungleOpenHaze;       // rgb color, a density outside the forest
 
+// Extra local fog banks (swamp ground mist, moor haze...), set by JungleAtmosphere.extraRegions.
+float4 _JungleFogExtraA[4];   // xy center, z radius, w falloff
+float4 _JungleFogExtraB[4];   // x density, y base height, z height falloff
+float _JungleFogExtraCount;
+
+float JungleExtraFogDensity(float3 p)
+{
+    float d = 0.0;
+    [unroll]
+    for (int i = 0; i < 4; i++)
+    {
+        if (i >= (int)_JungleFogExtraCount)
+            break;
+        float4 a = _JungleFogExtraA[i];
+        float4 b = _JungleFogExtraB[i];
+        float region = 1.0 - smoothstep(a.z, a.z + a.w, distance(p.xz, a.xy));
+        d += b.x * min(exp(-(p.y - b.y) * b.z), 4.0) * region;
+    }
+    return d;
+}
+
 float JungleFogDensityAt(float3 p)
 {
     float height = min(exp(-(p.y - _JungleFogParams.y) * _JungleFogParams.z), 3.0);
     float region = 1.0 - smoothstep(_JungleFogRegion.z, _JungleFogRegion.z + _JungleFogRegion.w, distance(p.xz, _JungleFogRegion.xy));
-    return _JungleFogParams.x * height * lerp(_JungleFogOpenDensity, 1.0, region);
+    return _JungleFogParams.x * height * lerp(_JungleFogOpenDensity, 1.0, region) + JungleExtraFogDensity(p);
 }
 
 float JunglePhaseHG(float cosTheta, float g)

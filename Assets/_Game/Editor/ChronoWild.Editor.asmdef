@@ -2,7 +2,10 @@
     "name": "ChronoWild.Editor",
     "rootNamespace": "ChronoWild.Editor",
     "references": [
-        "ChronoWild.Runtime"
+        "ChronoWild.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.GPUDriven.Runtime"
     ],
     "includePlatforms": [
         "Editor"

@@ -314,8 +314,16 @@ void SetupTerrainDebugTextureData(inout InputData inputData, float2 uv)
 
 float _JF_Depth, _JF_MaxSteps, _JF_FadeStart, _JF_FadeEnd, _JF_HeightContrast;
 float _JF_ShadowStrength, _JF_CavityAO, _JF_MacroVariation;
+// Island biome map (IslandBiomes component): R wetness, G beach, B swamp water, A moor.
+TEXTURE2D(_CW_BiomeMap); SAMPLER(sampler_CW_BiomeMap);
+// xy terrain size (m), z unused, w sea level (m)
+float4 _CW_BiomeParams;
+float _CW_RainWet;
+#include "Assets/_MyShaders/Water/RippleSample.hlsl"
+TEXTURE2D(_CW_VolcanoMap); SAMPLER(sampler_CW_VolcanoMap);
 float4 _JF_TerrainSize;
 
+#ifndef TERRAIN_SPLAT_BASEPASS // the far pass has no layer UVs and no parallax
 half JungleHeight(float2 tc, half4 control, float2 dx, float2 dy)
 {
     half4 h;
@@ -419,6 +427,8 @@ void JungleFloorParallax(inout Varyings IN, half4 control, out half hitHeight, o
         selfShadow = 1.0h - saturate(occluded * 6.0) * _JF_ShadowStrength * fade;
     }
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //                  Vertex and Fragment functions                            //
@@ -546,6 +556,11 @@ void SplatmapFragment(
     ComputeMasks(masks, hasMask, IN.uvSplat01, IN.uvSplat23);
 
     half alpha = dot(splatControl, 1.0h);
+#ifdef TERRAIN_SPLAT_ADDPASS
+    // Additive layers skip the parallax march (it would be paid three times); their mask height
+    // alone tells the puddles where the hollows are.
+    hitHeight = dot(splatControl, half4(masks[0].b, masks[1].b, masks[2].b, masks[3].b)) / max(alpha, 0.001h);
+#endif
 #ifdef _TERRAIN_BLEND_HEIGHT
     // disable Height Based blend when there are more than 4 layers (multi-pass breaks the normalization)
     HeightBasedSplatModify(splatControl, masks);
@@ -582,7 +597,54 @@ void SplatmapFragment(
     float2 macroP = IN.positionWS.xz;
     float macro = JungleNoise(macroP * 0.07) * 0.6 + JungleNoise(macroP * 0.23) * 0.4;
     albedo *= lerp(1.0h, half3(0.78h, 0.8h, 0.84h) + half3(0.42h, 0.38h, 0.3h) * macro, _JF_MacroVariation);
+
+    // Biome surface response. Soaked porous ground darkens and turns glossy (Lagarde, "Water
+    // drop" series); saturated hollows of the parallax relief fill with puddles; on the beach the
+    // wet line advances and retreats with the swell, leaving damp darker sand behind.
+    if (_CW_BiomeParams.x > 0)
+    {
+        half4 biome = SAMPLE_TEXTURE2D(_CW_BiomeMap, sampler_CW_BiomeMap, IN.positionWS.xz / _CW_BiomeParams.xy);
+        float aboveSea = IN.positionWS.y - _CW_BiomeParams.w;
+        float n = JungleNoise(IN.positionWS.xz * 0.17);
+        float runup = 0.2 + 0.45 * (sin(_Time.y * 0.5 + n * 4.0 + IN.positionWS.x * 0.035) * 0.5 + 0.5);
+        half swash = biome.g * (1.0h - smoothstep(runup - 0.06, runup + 0.04, aboveSea));
+        half damp = biome.g * (1.0h - smoothstep(0.35, 1.3, aboveSea));
+        half wet = saturate(max(biome.r, damp * 0.9h));
+        // Rain soaks everything, less on steep ground where water runs off.
+        wet = max(wet, (half)(_CW_RainWet * lerp(0.45, 0.95, saturate(normalize(IN.normal.xyz).y)) * lerp(0.45, 1.0, CW_RainExposure(IN.positionWS.xz))));
+        albedo *= lerp(1.0h, 0.52h, wet);
+        smoothness = lerp(smoothness, 0.8h, wet);
+        normalTS = normalize(lerp(normalTS, half3(0, 0, 1), wet * 0.45h));
+        half puddle = saturate((wet - 0.55h) * 4.0h) * saturate((wet * 0.85h - hitHeight) * 5.0h);
+        puddle = max(puddle, swash);
+        albedo = lerp(albedo, albedo * 0.4h, puddle);
+        smoothness = lerp(smoothness, 0.95h, puddle);
+        normalTS = normalize(lerp(normalTS, half3(0, 0, 1), puddle));
+        float2 rainRings = CW_RainSlope(IN.positionWS.xz) * puddle;
+        normalTS = normalize(normalTS + half3(-rainRings.x, -rainRings.y, 0));
+        occlusion = lerp(occlusion, 1.0h, puddle * 0.5h);
+    }
 #endif
+
+    // Volcanic ground. Keeps only the brightness detail of whatever layers are underneath and
+    // recolours it as basalt, with long mineral streaks and ash settled in the gullies. It runs in
+    // the far base pass too, otherwise the mountain would turn tan again at a distance. Far away
+    // the texture detail is flattened so its repetition cannot show on the big slopes.
+    if (_CW_BiomeParams.x > 0)
+    {
+        half4 volcano = SAMPLE_TEXTURE2D(_CW_VolcanoMap, sampler_CW_VolcanoMap, IN.positionWS.xz / _CW_BiomeParams.xy);
+        if (volcano.r > 0.002h)
+        {
+            half lum = dot(albedo, half3(0.3h, 0.59h, 0.11h));
+            float viewDist = distance(IN.positionWS, _WorldSpaceCameraPos);
+            lum = lerp(lum, 0.32h, saturate((viewDist - 30.0) / 130.0) * 0.85h);
+            half3 basalt = lum * half3(0.3h, 0.28h, 0.28h);
+            basalt = lerp(basalt, lum * half3(0.52h, 0.28h, 0.16h), volcano.g * 0.7h);
+            basalt *= lerp(1.0h, 0.55h, volcano.g * 0.5h);
+            basalt = lerp(basalt, half3(0.1h, 0.095h, 0.095h) * (0.75h + lum), volcano.b * 0.85h);
+            albedo = lerp(albedo, basalt, volcano.r);
+        }
+    }
 
     InputData inputData;
     InitializeInputData(IN, normalTS, inputData);

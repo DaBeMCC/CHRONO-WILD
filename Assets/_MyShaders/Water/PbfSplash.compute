@@ -1,0 +1,252 @@
+// Position Based Fluids (Macklin & Mueller, SIGGRAPH 2013) on the GPU, for splashes and spray.
+// Droplets collide with the terrain and, when they fall back into the water, kick the wave
+// simulation through the shared impact texture.
+#pragma kernel Emit
+#pragma kernel Predict
+#pragma kernel ClearGrid
+#pragma kernel CountGrid
+#pragma kernel PrefixGrid
+#pragma kernel ScatterGrid
+#pragma kernel Lambda
+#pragma kernel Delta
+#pragma kernel Apply
+#pragma kernel Finalize
+
+#include "WaterHeight.hlsl"
+
+struct Particle
+{
+    float3 x;
+    float life;     // seconds left; <= 0 is dead
+    float3 v;
+    float age;
+};
+
+RWStructuredBuffer<Particle> _Particles;
+StructuredBuffer<Particle> _EmitBuffer;
+RWStructuredBuffer<float4> _Predicted;   // xyz predicted position, w lambda
+RWStructuredBuffer<float4> _Deltas;
+RWStructuredBuffer<uint> _GridCounts;
+RWStructuredBuffer<uint> _GridIndices;
+RWTexture2D<int> _Impacts;
+
+int _MaxParticles, _EmitCount, _EmitHead, _CellCount;
+float _Dt, _H, _RestDensity, _Epsilon, _TensileK;
+float4 _RippleOrigin;
+int _Resolution;
+
+#define PI 3.14159265
+
+float Poly6(float r2)
+{
+    float h2 = _H * _H;
+    if (r2 >= h2)
+        return 0.0;
+    float d = h2 - r2;
+    return 315.0 / (64.0 * PI * pow(_H, 9.0)) * d * d * d;
+}
+
+float3 SpikyGrad(float3 r, float len)
+{
+    if (len >= _H || len < 1e-5)
+        return 0;
+    float d = _H - len;
+    return -45.0 / (PI * pow(_H, 6.0)) * d * d * (r / len);
+}
+
+int3 CellOf(float3 p) { return int3(floor(p / _H)); }
+
+uint HashCell(int3 c)
+{
+    uint h = (uint)(c.x * 73856093) ^ (uint)(c.y * 19349663) ^ (uint)(c.z * 83492791);
+    return h % (uint)_CellCount;
+}
+
+#define FOR_NEIGHBORS(center)                                                       \
+    int3 baseCell = CellOf(center);                                                 \
+    for (int cz = -1; cz <= 1; cz++)                                                \
+    for (int cy = -1; cy <= 1; cy++)                                                \
+    for (int cx = -1; cx <= 1; cx++)                                                \
+    {                                                                               \
+        uint bucket = HashCell(baseCell + int3(cx, cy, cz));                        \
+        uint first = bucket > 0 ? _GridCounts[bucket - 1] : 0;                      \
+        uint last = _GridCounts[bucket];                                            \
+        for (uint n = first; n < last; n++)                                         \
+        {                                                                           \
+            uint j = _GridIndices[n];
+
+#define END_NEIGHBORS }}
+
+[numthreads(64, 1, 1)]
+void Emit(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _EmitCount)
+        return;
+    _Particles[(_EmitHead + (int)id.x) % _MaxParticles] = _EmitBuffer[id.x];
+}
+
+[numthreads(256, 1, 1)]
+void Predict(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _MaxParticles)
+        return;
+    Particle p = _Particles[id.x];
+    if (p.life <= 0.0)
+        return;
+    p.v.y -= 9.81 * _Dt;
+    p.v *= 1.0 - 0.15 * _Dt; // air drag
+    _Particles[id.x] = p;
+    _Predicted[id.x] = float4(p.x + p.v * _Dt, 0.0);
+    _Deltas[id.x] = 0;
+}
+
+[numthreads(1024, 1, 1)]
+void ClearGrid(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x < _CellCount)
+        _GridCounts[id.x] = 0;
+}
+
+[numthreads(256, 1, 1)]
+void CountGrid(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _MaxParticles || _Particles[id.x].life <= 0.0)
+        return;
+    InterlockedAdd(_GridCounts[HashCell(CellOf(_Predicted[id.x].xyz))], 1);
+}
+
+// Serial prefix sum: each bucket ends up holding the index where it starts.
+[numthreads(1, 1, 1)]
+void PrefixGrid()
+{
+    uint sum = 0;
+    for (int i = 0; i < _CellCount; i++)
+    {
+        uint count = _GridCounts[i];
+        _GridCounts[i] = sum;
+        sum += count;
+    }
+}
+
+// Writing advances each bucket's start, so afterwards it holds the end of its own range,
+// which is also the start of the next one (the FOR_NEIGHBORS convention).
+[numthreads(256, 1, 1)]
+void ScatterGrid(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _MaxParticles || _Particles[id.x].life <= 0.0)
+        return;
+    uint slot;
+    InterlockedAdd(_GridCounts[HashCell(CellOf(_Predicted[id.x].xyz))], 1, slot);
+    _GridIndices[slot] = id.x;
+}
+
+[numthreads(256, 1, 1)]
+void Lambda(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _MaxParticles || _Particles[id.x].life <= 0.0)
+        return;
+    float3 pi = _Predicted[id.x].xyz;
+    float density = 0.0, sumGrad2 = 0.0;
+    float3 gradI = 0;
+    FOR_NEIGHBORS(pi)
+        float3 r = pi - _Predicted[j].xyz;
+        float r2 = dot(r, r);
+        if (r2 < _H * _H)
+        {
+            density += Poly6(r2);
+            if (j != id.x)
+            {
+                float3 g = SpikyGrad(r, sqrt(r2)) / _RestDensity;
+                gradI += g;
+                sumGrad2 += dot(g, g);
+            }
+        }
+    END_NEIGHBORS
+    sumGrad2 += dot(gradI, gradI);
+    // Only resist compression: a free-flying spray must be allowed to spread out.
+    float constraint = max(density / _RestDensity - 1.0, 0.0);
+    _Predicted[id.x].w = -constraint / (sumGrad2 + _Epsilon);
+}
+
+[numthreads(256, 1, 1)]
+void Delta(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _MaxParticles || _Particles[id.x].life <= 0.0)
+        return;
+    float4 pi = _Predicted[id.x];
+    float3 delta = 0;
+    float refW = Poly6(0.04 * _H * _H);
+    FOR_NEIGHBORS(pi.xyz)
+        if (j != id.x)
+        {
+            float4 pj = _Predicted[j];
+            float3 r = pi.xyz - pj.xyz;
+            float len = length(r);
+            if (len < _H && len > 1e-5)
+            {
+                float ratio = Poly6(len * len) / refW;
+                float tensile = -_TensileK * ratio * ratio * ratio * ratio;
+                delta += (pi.w + pj.w + tensile) * SpikyGrad(r, len);
+            }
+        }
+    END_NEIGHBORS
+    delta /= _RestDensity;
+    float magnitude = length(delta);
+    // Per-iteration limit: corrections become velocity, so an unlimited push launches droplets.
+    float limit = _H * 0.06;
+    if (magnitude > limit)
+        delta *= limit / magnitude;
+    _Deltas[id.x] = float4(delta, 0.0);
+}
+
+[numthreads(256, 1, 1)]
+void Apply(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _MaxParticles || _Particles[id.x].life <= 0.0)
+        return;
+    float4 p = _Predicted[id.x];
+    p.xyz += _Deltas[id.x].xyz;
+    p.y = max(p.y, TerrainHeightAt(p.xz) + 0.02);
+    _Predicted[id.x] = p;
+}
+
+void InjectImpact(float2 xz, float kick)
+{
+    int2 t = int2(floor((xz - _RippleOrigin.xy) / _RippleOrigin.z));
+    if (t.x < 0 || t.y < 0 || t.x >= _Resolution || t.y >= _Resolution)
+        return;
+    InterlockedAdd(_Impacts[t], (int)(kick * 1000.0));
+}
+
+[numthreads(256, 1, 1)]
+void Finalize(uint3 id : SV_DispatchThreadID)
+{
+    if ((int)id.x >= _MaxParticles)
+        return;
+    Particle p = _Particles[id.x];
+    if (p.life <= 0.0)
+        return;
+    float3 next = _Predicted[id.x].xyz;
+    float3 v = (next - p.x) / _Dt;
+    float speed = length(v);
+    if (speed > 25.0)
+        v *= 25.0 / speed;
+    p.x = next;
+    p.v = v;
+    p.age += _Dt;
+    p.life -= _Dt;
+
+    float ground = TerrainHeightAt(next.xz);
+    if (next.y <= ground + 0.03)
+    {
+        // Soaks into the ground: friction, then it disappears quickly.
+        p.v *= 0.6;
+        p.life -= _Dt * 6.0;
+    }
+    if (p.v.y < 0.0 && p.age > 0.05 && next.y < WaterHeightAt(next.xz))
+    {
+        InjectImpact(next.xz, -min(abs(p.v.y), 8.0) * 0.12);
+        p.life = 0.0;
+    }
+    _Particles[id.x] = p;
+}

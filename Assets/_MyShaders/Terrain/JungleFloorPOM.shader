@@ -314,8 +314,8 @@ Shader "CHRONO WILD/Terrain/Jungle Floor POM"
 
         UsePass "Hidden/Nature/Terrain/Utilities/PICKING"
     }
-    Dependency "AddPassShader" = "Hidden/Universal Render Pipeline/Terrain/Lit (Add Pass)"
-    Dependency "BaseMapShader" = "Hidden/Universal Render Pipeline/Terrain/Lit (Base Pass)"
+    Dependency "AddPassShader" = "Hidden/CHRONO WILD/Terrain/Jungle Floor (Add Pass)"
+    Dependency "BaseMapShader" = "Hidden/CHRONO WILD/Terrain/Jungle Floor (Base Pass)"
     Dependency "BaseMapGenShader" = "Hidden/Universal Render Pipeline/Terrain/Lit (Basemap Gen)"
 
     CustomEditor "UnityEditor.Rendering.Universal.TerrainLitShaderGUI"

@@ -23,6 +23,7 @@ Shader "CHRONO WILD/Environment/Forest Impostor"
    #pragma vertex ImpostorVertex
    #pragma fragment Fragment
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile_fog
    half4 Fragment(Varyings v):SV_Target{UNITY_SETUP_INSTANCE_ID(v);half4 c=Atlas(v);return half4(MixFog(c.rgb,v.fog),1);}
    ENDHLSL
@@ -35,6 +36,7 @@ Shader "CHRONO WILD/Environment/Forest Impostor"
    #pragma vertex ImpostorVertex
    #pragma fragment FragmentDepth
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    half4 FragmentDepth(Varyings v):SV_Target{Atlas(v);return 0;}
    ENDHLSL
   }
@@ -46,6 +48,7 @@ Shader "CHRONO WILD/Environment/Forest Impostor"
    #pragma vertex ImpostorVertex
    #pragma fragment FragmentNormals
    #pragma multi_compile_instancing
+   #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
    #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
    half4 FragmentNormals(Varyings v):SV_Target{Atlas(v);half3 n=normalize(v.normalWS);
    #if defined(_GBUFFER_NORMALS_OCT)

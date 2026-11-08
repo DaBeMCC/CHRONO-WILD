@@ -57,6 +57,31 @@ namespace ChronoWild.Rendering
         public Color openHazeColor = new Color(0.62f, 0.74f, 0.86f);
         [Range(0f, 0.05f)] public float openHazeDensity = 0.0025f;
 
+        [System.Serializable]
+        public struct FogBank
+        {
+            public string name;
+            [Tooltip("Center (x, z) of the bank.")]
+            public Vector2 center;
+            public float radius;
+            public float falloff;
+            [Tooltip("Extinction per meter at the base height.")]
+            [Range(0f, 0.3f)] public float density;
+            public float baseHeight;
+            [Tooltip("How fast the bank thins with height (1/m). High values hug the ground.")]
+            [Range(0.01f, 2f)] public float heightFalloff;
+        }
+
+        [Header("Local fog banks")]
+        [Tooltip("Up to four extra banks (swamp ground mist, moor haze). They add to the forest fog.")]
+        public FogBank[] extraBanks = new FogBank[0];
+
+        static readonly int ExtraA = Shader.PropertyToID("_JungleFogExtraA");
+        static readonly int ExtraB = Shader.PropertyToID("_JungleFogExtraB");
+        static readonly int ExtraCount = Shader.PropertyToID("_JungleFogExtraCount");
+        readonly Vector4[] extraA = new Vector4[4];
+        readonly Vector4[] extraB = new Vector4[4];
+
         static readonly int FogParams = Shader.PropertyToID("_JungleFogParams");
         static readonly int FogAmbient = Shader.PropertyToID("_JungleFogAmbient");
         static readonly int FogNoise = Shader.PropertyToID("_JungleFogNoise");
@@ -99,6 +124,24 @@ namespace ChronoWild.Rendering
             Shader.SetGlobalVector(OpenHaze, new Vector4(open.r, open.g, open.b, openHazeDensity));
             var haze = hazeColor.linear;
             Shader.SetGlobalVector(HazeColor, new Vector4(haze.r, haze.g, haze.b, hazeSunTint));
+            int count = extraBanks == null ? 0 : Mathf.Min(extraBanks.Length, 4);
+            for (int i = 0; i < 4; i++)
+            {
+                if (i < count)
+                {
+                    var b = extraBanks[i];
+                    extraA[i] = new Vector4(b.center.x, b.center.y, b.radius, Mathf.Max(b.falloff, 1f));
+                    extraB[i] = new Vector4(b.density, b.baseHeight, b.heightFalloff, 0f);
+                }
+                else
+                {
+                    extraA[i] = Vector4.zero;
+                    extraB[i] = Vector4.zero;
+                }
+            }
+            Shader.SetGlobalVectorArray(ExtraA, extraA);
+            Shader.SetGlobalVectorArray(ExtraB, extraB);
+            Shader.SetGlobalFloat(ExtraCount, count);
         }
     }
 }

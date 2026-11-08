@@ -75,6 +75,7 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
    #include "Assets/_MyShaders/Environment/JungleAtmosphere.hlsl"
+   #include "Assets/_MyShaders/Water/RippleSample.hlsl"
 
    CBUFFER_START(UnityPerMaterial)
    half4 _ShallowColor; half4 _DeepColor; float _DepthRange; float _Clarity; half _Refraction;
@@ -84,6 +85,10 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
    half4 _FoamColor; float _ShoreFoamDepth; half _BreakFoam; half _Whitecaps; half _EdgeFade;
    CBUFFER_END
    float _ChronoQuality;
+   // Time-of-day and weather sky colours, when the day-night cycle is running.
+   float4 _CW_SkyZ, _CW_SkyH;
+   #define SKY_ZENITH lerp(_SkyZenith.rgb, _CW_SkyZ.rgb, _CW_SkyZ.w)
+   #define SKY_HORIZON lerp(_SkyHorizon.rgb, _CW_SkyH.rgb, _CW_SkyH.w)
    TEXTURE2D(_ChronoSeabedTex); SAMPLER(sampler_ChronoSeabedTex);
    float4 _ChronoSeabedRect;
    float _ChronoSeabedOpenDepth;
@@ -377,6 +382,11 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
     // Second band slopes are not scaled down with its tile: same steepness at a smaller size.
     float2 fftSlope = ((nA.xy * 2 - 1) + (nB.xy * 2 - 1) * _FFTDetail) * fftOpen;
     slope += fftSlope;
+    // Interactive waves: wakes, splashes and droplet impacts from the wave simulation.
+    float2 rippleGrad; float rippleFoam;
+    CW_SampleRipple(p, rippleGrad, rippleFoam);
+    slope -= rippleGrad * 0.65;
+    if (dist < 60.0) slope -= CW_RainSlope(p) * saturate(1.0 - dist / 60.0);
     n = normalize(n + float3(slope.x, 0, slope.y));
 
     half3 bottom;
@@ -411,7 +421,7 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
     half stirred = saturate(1.0 - v.waveData.w / (_SurfHeight * 2.6)) * saturate(v.waveData.w / 0.15);
     waterColor = lerp(waterColor, half3(0.22, 0.32, 0.27), stirred * 0.75);
     visibility *= 1.0 - stirred * 0.65;
-    half3 lit = waterColor * (sun.color * saturate(sun.direction.y) * 0.55 + _SkyZenith.rgb * 0.6);
+    half3 lit = waterColor * (sun.color * saturate(sun.direction.y) * 0.55 + SKY_ZENITH * 0.6);
     half3 color = lerp(lit, bottom * lerp(_ShallowColor.rgb * 1.4, 1, 0.45), visibility);
 
     // Far away the surface is a blur of tilted facets: average reflectance drops below the
@@ -424,11 +434,11 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
      // The standing face of an unbroken wave is thin near its top: seen from the shore it glows green.
      half faceToViewer = saturate(dot(normalize(v.normalWS), view));
      half thinTop = saturate(v.waveData.y * 1.4);
-     color = lerp(color, _SSSColor.rgb * (sun.color * 0.9 + _SkyZenith.rgb * 0.6), thinTop * faceToViewer * 0.75 * _SSSStrength);
+     color = lerp(color, _SSSColor.rgb * (sun.color * 0.9 + SKY_ZENITH * 0.6), thinTop * faceToViewer * 0.75 * _SSSStrength);
     }
     half fresnel = (0.02 + 0.98 * pow(1 - saturate(dot(n, view)), 5)) * lerp(1.0, 0.62, saturate(dist / 350));
     float3 rd = reflect(-view, n);
-    half3 refl = lerp(_SkyHorizon.rgb, _SkyZenith.rgb, pow(saturate(rd.y), 0.45));
+    half3 refl = lerp(SKY_HORIZON, SKY_ZENITH, pow(saturate(rd.y), 0.45));
     color = lerp(color, refl, fresnel);
 
     // Sun: tight highlight up close, a wide glittering path far away that sparkles over time.
@@ -463,7 +473,7 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
     float caps = capField * capPulse * _Whitecaps * saturate((dist - 30) / 120) * saturate(v.waveData.w / 6);
     // Whitecaps where the FFT waves fold over (accumulated foam baked with build-up and decay).
     float fftFoam = saturate((nA.z + nB.z * 0.6) * 0.7 * _FFTFoam * fftOpen) * saturate(1 - dist / 220);
-    float foamMask = saturate(rim + swashLace + caps + fftFoam);
+    float foamMask = saturate(rim + swashLace + caps + fftFoam + rippleFoam * 1.4);
     float coverage = foamMask * 0.62;
     float foam = smoothstep(1.0 - coverage, 1.0 - coverage + 0.35, pattern) * saturate(foamMask * 2.5) * 0.9;
     // Dense core where the bore is freshly breaking.
@@ -490,7 +500,7 @@ Shader "CHRONO WILD/Water/Coastal Ocean"
     half foamLight = saturate(0.35 + fh * 0.55 + fineLump * 0.35 - fhx * 1.1);
     half3 foamLit = lerp(half3(0.4, 0.52, 0.62), half3(1.0, 1.0, 1.0), foamLight) * 0.9;
     half sparkle = step(0.985, Hash1(floor(pl * 9.0) + floor(t * 12.0))) * foam;
-    color = lerp(color, _FoamColor.rgb * foamLit * (sun.color * saturate(sun.direction.y) * 0.9 + _SkyZenith.rgb * 0.55) + sparkle * sun.color * 0.6, foam);
+    color = lerp(color, _FoamColor.rgb * foamLit * (sun.color * saturate(sun.direction.y) * 0.9 + SKY_ZENITH * 0.55) + sparkle * sun.color * 0.6, foam);
 
     color = ApplyJungleAtmosphere(color, v.positionWS, sun.color, sun.direction);
     half alpha = saturate(depth / _EdgeFade);

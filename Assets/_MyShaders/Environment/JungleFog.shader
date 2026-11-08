@@ -17,23 +17,42 @@ Shader "Hidden/CHRONO WILD/Jungle Fog"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
    #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
 
-   // x density, y base height, z height falloff, w sky distance
-   float4 _JungleFogParams;
-   float4 _JungleFogAmbient;
+   #include "Assets/_MyShaders/Environment/JungleAtmosphere.hlsl"
    // x noise amount, y noise scale
    float4 _JungleFogNoise;
    float4 _JungleFogWind;
    // x sun scattering, y anisotropy, z march distance, w steps
    float4 _JungleFogMarch;
-   // x density, y start distance, z height falloff
-   float4 _JungleHaze;
-   // xy region center (world xz), z radius, w falloff
-   float4 _JungleFogRegion;
-   float _JungleFogOpenDensity;
-   // rgb haze color and a density used when the camera stands outside the forest region
-   float4 _JungleOpenHaze;
-   // rgb haze color, a sun tint amount
-   float4 _JungleHazeColor;
+
+   // Volumetric sky globals (VolumetricSky component), used for cloud shadows on the ground.
+   TEXTURE3D(_VCloudShapeTex); SAMPLER(sampler_VCloudShapeTex);
+   float4 _VCloudLayer;   // x bottom, y top, z coverage, w density
+   float4 _VCloudNoise;   // x shape scale, y detail scale, z weather scale
+   float4 _VCloudWind;    // xyz wind, w coverage variation
+   float _VCloudShadow;   // strength
+
+   float CloudRemap(float v, float a, float b, float c, float d) { return c + (v - a) / max(b - a, 1e-5) * (d - c); }
+
+   // Crytek-style screen-space cloud shadow: project the pixel along the sun onto the middle of
+   // the cloud layer and evaluate the same coverage field the sky marches through.
+   float CloudShadowAt(float3 p, float3 sunDir)
+   {
+    if (_VCloudShadow <= 0.0 || _VCloudLayer.w <= 0.0)
+     return 0.0;
+    float mid = lerp(_VCloudLayer.x, _VCloudLayer.y, 0.3);
+    float3 q = p + sunDir * ((mid - p.y) / max(sunDir.y, 0.15));
+    float3 wind = _VCloudWind.xyz * _Time.y;
+    float2 wuv = (q.xz + wind.xz * 0.6) * _VCloudNoise.z;
+    float weather = SAMPLE_TEXTURE3D_LOD(_VCloudShapeTex, sampler_VCloudShapeTex, float3(wuv.x, 0.37, wuv.y), 0).r;
+    float coverage = saturate(_VCloudLayer.z + (weather - 0.5) * _VCloudWind.w);
+    float3 sq = (float3(q.x, mid, q.z) + wind) * _VCloudNoise.x;
+    sq.y += 0.06;
+    float4 n = SAMPLE_TEXTURE3D_LOD(_VCloudShapeTex, sampler_VCloudShapeTex, sq, 0);
+    float fbm = n.g * 0.625 + n.b * 0.25 + n.a * 0.125;
+    float shape = saturate(CloudRemap(n.r, fbm - 1.0, 1.0, 0.0, 1.0));
+    float base = saturate(CloudRemap(shape, 1.0 - coverage, 1.0, 0.0, 1.0));
+    return saturate(base * 4.0);
+   }
 
    float Hash(float3 p)
    {
@@ -61,6 +80,8 @@ Shader "Hidden/CHRONO WILD/Jungle Fog"
     // Dense fog only under the forest; open ground (beach, clearings outside) keeps a light haze.
     float region = 1.0 - smoothstep(_JungleFogRegion.z, _JungleFogRegion.z + _JungleFogRegion.w, distance(p.xz, _JungleFogRegion.xy));
     d *= lerp(_JungleFogOpenDensity, 1.0, region);
+    // Local banks: swamp ground mist, moor haze.
+    d += JungleExtraFogDensity(p);
     if (withNoise)
     {
      float3 q = p * _JungleFogNoise.y + _JungleFogWind.xyz * _Time.y * _JungleFogNoise.y;
@@ -93,7 +114,18 @@ Shader "Hidden/CHRONO WILD/Jungle Fog"
     float dist = sky ? _JungleFogParams.w : distance(world, camera);
 
     Light sun = GetMainLight();
-    float3 sunLight = sun.color * Phase(dot(dir, sun.direction), _JungleFogMarch.y) * _JungleFogMarch.x * 4.0 * PI;
+    // Under a cloud the light shafts dim too.
+    float cameraCloud = CloudShadowAt(camera, sun.direction);
+    float3 sunLight = sun.color * Phase(dot(dir, sun.direction), _JungleFogMarch.y) * _JungleFogMarch.x * 4.0 * PI * (1.0 - cameraCloud * _VCloudShadow);
+    if (!sky)
+    {
+     // Cloud shadows only remove direct sun, so they only darken pixels the sun actually reaches.
+     half sunVisible = 1.0;
+     #if defined(_MAIN_LIGHT_SHADOWS) || defined(_MAIN_LIGHT_SHADOWS_CASCADE)
+      sunVisible = MainLightRealtimeShadow(TransformWorldToShadowCoord(world));
+     #endif
+     scene.rgb *= 1.0 - CloudShadowAt(world, sun.direction) * _VCloudShadow * sunVisible;
+    }
     float3 ambient = _JungleFogAmbient.rgb;
 
     // Zero steps (low quality) skips the shadow-marched shafts; only the analytic fog remains.
