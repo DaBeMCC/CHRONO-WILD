@@ -198,7 +198,7 @@ namespace ChronoWild.EditorTools
             var deathImage=Image("Death Image",death.transform,Color.white,Art("has_muerto")); Rect(deathImage.gameObject,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero); deathImage.material=AssetDatabase.LoadAssetAtPath<Material>(Root+"UI/ChromaDeath.mat"); hud.deathBackground=deathImage;
             var deathText=Text("Return",death.transform,"Presiona ENTER para regresar al menú principal",35); Rect(deathText.gameObject,new Vector2(0.1f,0.06f),new Vector2(0.9f,0.16f),Vector2.zero,Vector2.zero); hud.deathText=deathText;
             var source=go.AddComponent<AudioSource>(); source.playOnAwake=false; hud.damageAudio=source;
-            var volumeGo=new GameObject("Pause Desaturation",typeof(Volume)); var volume=volumeGo.GetComponent<Volume>(); volume.isGlobal=true; volume.priority=100; volume.weight=1; volume.enabled=false;
+            var oldVolume=GameObject.Find("Pause Desaturation"); if (oldVolume) UnityEngine.Object.DestroyImmediate(oldVolume); var volumeGo=new GameObject("Pause Desaturation",typeof(Volume)); var volume=volumeGo.GetComponent<Volume>(); volume.isGlobal=true; volume.priority=100; volume.weight=1; volume.enabled=false;
             var profile=AssetDatabase.LoadAssetAtPath<VolumeProfile>(Root+"UI/PauseVolume.asset"); if (!profile) { profile=ScriptableObject.CreateInstance<VolumeProfile>(); AssetDatabase.CreateAsset(profile,Root+"UI/PauseVolume.asset"); } if (!profile.TryGet(out ColorAdjustments color)) color=profile.Add<ColorAdjustments>(true); color.saturation.Override(-100); volume.sharedProfile=profile; hud.pauseVolume=volume;
         }
         static void MakeSlider(Transform parent,string label,float y,float min,float max,float value,UnityEngine.Events.UnityAction<float> action)
