@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4fe1320c765fe89293efb32551b71c9, type: 3}
+  m_Name: radio
+  m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
+  id: radio
+  displayName: Radio
+  hint: "Una voz antigua podr\xEDa guiarte al portal."
+  icon: {fileID: -1879195240866737832, guid: a0ea323b2b6bdeb15add311c142e8bdf, type: 3}
+  prefab: {fileID: 1756438538067288, guid: 9b7d674bd208a2a4aa6f2ff5594f9c95, type: 3}

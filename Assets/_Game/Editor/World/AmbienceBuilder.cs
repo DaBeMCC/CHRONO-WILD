@@ -353,13 +353,16 @@ namespace ChronoWild.Editor.World
             float White() => (float)rng.NextDouble() * 2f - 1f;
             float l1 = 0f, l2 = 0f;
 
-            // Surf: deep noise that swells and hisses with each wave.
+            // Surf: each wave swells, crashes and drains away; between waves there is near silence,
+            // so no constant low hiss is left that would read as wind.
             var surf = SaveWav("A_Surf", Render(36f, (t, i) =>
             {
-                float wave = Mathf.Pow(Mathf.Sin(t * 0.7f) * 0.5f + 0.5f, 2.5f) * 0.75f + Mathf.Pow(Mathf.Sin(t * 0.43f + 1f) * 0.5f + 0.5f, 3f) * 0.5f;
-                l1 += (White() - l1) * (0.05f + wave * 0.3f);
-                l2 += (White() - l2) * 0.012f;
-                return l1 * (0.15f + wave) + l2 * 2.2f;
+                float phase = (t % 7.2f) / 7.2f, phase2 = ((t + 3.1f) % 9.5f) / 9.5f;
+                float Wave(float p) => p < 0.12f ? p / 0.12f : Mathf.Exp(-(p - 0.12f) * 5.5f);
+                float wave = Wave(phase) * 0.8f + Wave(phase2) * 0.45f;
+                l1 += (White() - l1) * (0.08f + wave * 0.4f);
+                l2 += (White() - l2) * 0.03f;
+                return (l1 * 0.9f + l2 * 0.8f) * wave;
             }));
 
             var go = new GameObject("Ambient Sound");
@@ -370,7 +373,7 @@ namespace ChronoWild.Editor.World
             zones.terrain = terrain;
             zones.zones = new[]
             {
-                new AmbientSoundZones.Zone { name = "Surf", bed = surf, volume = 0.8f, coastal = true },
+                new AmbientSoundZones.Zone { name = "Surf", bed = surf, volume = 0.5f, coastal = true },
             };
             // Footsteps are removed for now; the FootstepAudio script is kept for when new sounds are added.
             var steps = player.GetComponent<ChronoWild.Player.FootstepAudio>();

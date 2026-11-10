@@ -6,13 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/_Game/Scenes/World/Island_Gameplay.unity
-    guid: 29d2f3876544780c0aa6cdc5f6b5e622
+    path: Assets/ChronoWild/MainMenu.unity
+    guid: 89d650b203b58fcfaa6976c4cf05b8a6
   - enabled: 1
-    path: Assets/_Game/Scenes/World/Island_Terrain.unity
-    guid: 9f314948a5726d6a6bead2cfab07f335
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/_Game/Scenes/Art/Jungle_JurassicWetland.unity
+    guid: d4ffe1915f21ae5eb957a17c96976e3e
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

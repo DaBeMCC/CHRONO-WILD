@@ -18,6 +18,8 @@ namespace ChronoWild.Player
         public float gravity = -20f;
         public float slideSpeed = 7f;
         public float lookSensitivity = 0.12f;
+        [Tooltip("Esc frees the cursor and a click locks it again. Off when a game-state system (pause menu) owns the cursor.")]
+        public bool handleCursor = true;
         public Transform cameraPivot;
 
         public float DistanceTravelled { get; private set; }
@@ -54,12 +56,12 @@ namespace ChronoWild.Player
             if (keyboard == null)
                 return;
 
-            if (keyboard.escapeKey.wasPressedThisFrame)
+            if (handleCursor && keyboard.escapeKey.wasPressedThisFrame)
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+            if (handleCursor && mouse != null && mouse.leftButton.wasPressedThisFrame)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
