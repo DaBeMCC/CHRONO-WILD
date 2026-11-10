@@ -1101683,6 +1101683,8 @@ GameObject:
   - component: {fileID: 1204781505}
   - component: {fileID: 1204781506}
   - component: {fileID: 1204781507}
+  - component: {fileID: 1204781509}
+  - component: {fileID: 1204781508}
   m_Layer: 0
   m_Name: Review Player
   m_TagString: Untagged
@@ -1101763,6 +1101765,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1905234107}
+  - {fileID: 1950926131}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1204781503
@@ -1101842,6 +1101845,42 @@ MonoBehaviour:
   hideDuringIntro:
   - {fileID: 1790713617}
   - {fileID: 1754737985}
+--- !u!114 &1204781508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1204781498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0040baa2b33c5f309cc1d657241afd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ChronoWild.Runtime::ChronoWild.Player.ThirdPersonView
+  controller: {fileID: 1204781500}
+  avatar: {fileID: 1204781509}
+  distance: 3.2
+  shoulder: {x: 0.45, y: 0.15}
+  collisionRadius: 0.25
+  minDistance: 0.5
+  toggleKey: 36
+--- !u!114 &1204781509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1204781498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c2c5fdd6ffa600a594b04c6f0a5029d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ChronoWild.Runtime::ChronoWild.Player.CharacterAvatar
+  animator: {fileID: 1950926133}
+  model: {fileID: 1950926131}
+  body: {fileID: 1204781501}
+  airborneDelay: 0.18
+  turnSpeed: 720
 --- !u!1001 &1205103833
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1654016,6 +1654055,7 @@ MonoBehaviour:
   - Un raptor deja de perseguirte si te alejas de su territorio.
   - Busca las piezas cerca de donde se apaga el haz de luz.
   - "El meteorito baja un poco cada d\xEDa. No pierdas tiempo."
+  - Pulsa V para cambiar entre primera y tercera persona.
 --- !u!114 &1794531263
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1793395,6 +1793435,98 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2530634274231574597, guid: afbd3d6170ed614eba11f179880120ed, type: 3}
   m_PrefabInstance: {fileID: 1950836567}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1950926130
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1204781502}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      propertyPath: m_Name
+      value: Time Traveler
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1950926133}
+  m_SourcePrefab: {fileID: 100100000, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+--- !u!4 &1950926131 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+  m_PrefabInstance: {fileID: 1950926130}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1950926132 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3909b185496972bc2bc347fefbcac6d2, type: 3}
+  m_PrefabInstance: {fileID: 1950926130}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1950926133
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1950926132}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2c28a63ea2b5aa9309af0d11375730ab, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &1950949716
 PrefabInstance:
   m_ObjectHideFlags: 0

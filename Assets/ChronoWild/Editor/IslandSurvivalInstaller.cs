@@ -35,6 +35,7 @@ namespace ChronoWild.EditorTools
             "Un raptor deja de perseguirte si te alejas de su territorio.",
             "Busca las piezas cerca de donde se apaga el haz de luz.",
             "El meteorito baja un poco cada día. No pierdas tiempo.",
+            "Pulsa V para cambiar entre primera y tercera persona.",
         };
 
         [MenuItem("CHRONO WILD/World/Install Survival (Health, Raptors)")]
