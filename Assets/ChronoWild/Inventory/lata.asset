@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4fe1320c765fe89293efb32551b71c9, type: 3}
+  m_Name: lata
+  m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
+  id: lata
+  displayName: Lata
+  hint: "La supervivencia tambi\xE9n necesita alimento."
+  icon: {fileID: -9074054616296843337, guid: f22369d08e7e5f589b9cfae12233547f, type: 3}
+  prefab: {fileID: 1896720402374228, guid: baa8d2066558c9a4ebcd1853c4c3ac4e, type: 3}

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4fe1320c765fe89293efb32551b71c9, type: 3}
+  m_Name: manivela
+  m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
+  id: manivela
+  displayName: Manivela
+  hint: Puede activar un mecanismo manual.
+  icon: {fileID: 21300000, guid: 8fa8cb98fa777cd459aef71df268c2cc, type: 3}
+  prefab: {fileID: 1156424916853367509, guid: ecac38706cd74b24cb201deacea4dec0, type: 3}

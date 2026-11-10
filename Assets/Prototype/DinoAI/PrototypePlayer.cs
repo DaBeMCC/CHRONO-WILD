@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ChronoWild.Core;
+using ChronoWild.Health;
 
 namespace ChronoWild.Prototype
 {
@@ -28,6 +30,8 @@ namespace ChronoWild.Prototype
         float shakeUntil;
         float shakeStart;
 
+        public bool IsMoving { get; private set; }
+        public bool IsRunning { get; private set; }
         public bool IsStunned => Time.time < stunnedUntil;
 
         void Awake()
@@ -39,8 +43,7 @@ namespace ChronoWild.Prototype
 
         void OnEnable()
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            if (GameStateController.Instance == null) { Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false; }
         }
 
         void OnDisable()
@@ -53,19 +56,8 @@ namespace ChronoWild.Prototype
         {
             var keyboard = Keyboard.current;
             var mouse = Mouse.current;
-            if (keyboard == null || cameraPivot == null)
-                return;
-
-            if (keyboard.escapeKey.wasPressedThisFrame)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
+            if (keyboard == null || cameraPivot == null) return;
+            if (GameStateController.Instance != null && !GameStateController.Instance.CanControl) { IsMoving = false; IsRunning = false; return; }
 
             if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
@@ -82,6 +74,7 @@ namespace ChronoWild.Prototype
             input = Vector2.ClampMagnitude(input, 1f);
 
             bool sprinting = keyboard.leftShiftKey.isPressed && input.y > 0f;
+            IsMoving = input.sqrMagnitude > 0.01f; IsRunning = IsMoving && sprinting;
             float speed = sprinting ? sprintSpeed : walkSpeed;
             if (IsStunned) speed *= stunnedSpeedMultiplier;
             Vector3 horizontal = (transform.right * input.x + transform.forward * input.y) * speed;
@@ -109,9 +102,9 @@ namespace ChronoWild.Prototype
         public void ReceiveHit()
         {
             stunnedUntil = Time.time + stunDuration;
-            shakeStart = Time.time;
-            shakeUntil = Time.time + 0.4f;
-            if (hitFlash != null) hitFlash.Flash();
+            var health = GetComponent<PlayerHealth>();
+            if (health != null) health.TakeDamage(PlayerHealth.AttackDamage);
+            else { shakeStart = Time.time; shakeUntil = Time.time + 0.4f; if (hitFlash != null) hitFlash.Flash(); }
         }
     }
 }

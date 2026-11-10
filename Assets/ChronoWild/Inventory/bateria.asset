@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4fe1320c765fe89293efb32551b71c9, type: 3}
+  m_Name: bateria
+  m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
+  id: bateria
+  displayName: "Bater\xEDa"
+  hint: "Una reserva de energ\xEDa para el portal."
+  icon: {fileID: -5561958675533667247, guid: 24be81801594dcac391f69152e176ac7, type: 3}
+  prefab: {fileID: 1123693314251274, guid: b741fa043c0908c499bb320804aa111b, type: 3}

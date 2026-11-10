@@ -1,4 +1,5 @@
 using UnityEngine;
+using ChronoWild.Health;
 
 namespace ChronoWild.Prototype
 {
@@ -107,8 +108,11 @@ namespace ChronoWild.Prototype
                 case DinoState.Chase:
                     if (distance <= hitRange)
                     {
-                        player.ReceiveHit();
-                        Enter(DinoState.HitRecovery);
+                        if (!Physics.Linecast(transform.position + Vector3.up * 1.2f, player.transform.position + Vector3.up * 1.2f, out var obstacle) || obstacle.collider.GetComponentInParent<PrototypePlayer>() == player)
+                        {
+                            player.ReceiveHit();
+                            Enter(DinoState.HitRecovery);
+                        }
                     }
                     direction = toPlayer.normalized;
                     speed = chaseSpeed;
