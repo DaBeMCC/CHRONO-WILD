@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
   id: encendedor
   displayName: Encendedor
+  pickupName: el encendedor
+  survivalUses:
+  - encender una fogata para mantenerme a salvo
+  - conseguir luz de emergencia si se agotan las pilas
   hint: "\xDAtil cuando todo queda a oscuras."
   icon: {fileID: 21300000, guid: 234d6169fa43b0a47bcc0a77b2f339bc, type: 3}
   prefab: {fileID: 5440400877258438992, guid: ced74f861cc67534e8a7d791f17c14a7, type: 3}

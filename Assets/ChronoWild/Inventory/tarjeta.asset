@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
   id: tarjeta
   displayName: Tarjeta de seguridad
+  pickupName: la tarjeta de seguridad
+  survivalUses:
+  - entrar en las zonas restringidas
+  - acceder al control del portal
   hint: Abre el acceso restringido.
   icon: {fileID: 21300000, guid: 78f11b6a94d9d0648b6cde62c454c7c1, type: 3}
   prefab: {fileID: 2621077168584179877, guid: e7b4b7e0ed8684642ad44256d56825e2, type: 3}

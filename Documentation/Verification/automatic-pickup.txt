@@ -1,0 +1,19 @@
+PASS automatic contact item 0; inventory=1
+PASS automatic contact item 1; inventory=2
+PASS automatic contact item 2; inventory=3
+PASS automatic contact item 3; inventory=4
+PASS automatic contact item 4; inventory=5
+PASS automatic contact item 5; inventory=6
+PASS automatic contact item 6; inventory=7
+PASS automatic contact item 7; inventory=8
+PASS automatic contact item 8; inventory=9
+PASS automatic contact item 9; inventory=10
+PASS automatic contact item 10; inventory=11
+PASS automatic contact item 11; inventory=12
+PASS automatic contact item 12; inventory=13
+PASS automatic contact item 13; inventory=14
+PASS automatic contact item 14; inventory=15
+PASS bob motion and aura pulse for all 15
+PASS fixed slot icons updated
+PASS message: Encontré la batería. Esto me ayudará a mantener encendido el equipo de emergencia.
+COMPLETE

@@ -61,6 +61,9 @@ namespace ChronoWild.EditorTools
             EditorBuildSettings.scenes = Array.ConvertAll(scenes, p => new EditorBuildSettingsScene(p, true));
             EditorSceneManager.OpenScene("Assets/Prototype/DinoAI/DinoPrototype.unity");
             AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
+            BackpackCorrections.Apply();
+            BackpackCorrections.RebuildPreviewIcons();
+            AutomaticPickupSetup.Apply();
             Debug.Log("Chrono Wild planned prototype installed.");
         }
         static void PrepareTextures()

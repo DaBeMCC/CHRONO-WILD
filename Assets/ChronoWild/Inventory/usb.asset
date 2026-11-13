@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
   id: usb
   displayName: Memoria USB
+  pickupName: la memoria USB
+  survivalUses:
+  - "recuperar los datos de calibraci\xF3n del portal"
+  - consultar las instrucciones del experimento
   hint: "Tal vez contiene datos de calibraci\xF3n."
   icon: {fileID: 21300000, guid: 5b4bd153173c29048b1d05a2f50f58f9, type: 3}
   prefab: {fileID: 6782773616935837423, guid: cb606318345a3184fbf0a8dc62bc6a61, type: 3}

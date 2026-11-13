@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
   id: manivela
   displayName: Manivela
+  pickupName: la manivela
+  survivalUses:
+  - "accionar el mecanismo cuando falle la energ\xEDa"
+  - abrir manualmente el acceso de emergencia
   hint: Puede activar un mecanismo manual.
   icon: {fileID: 21300000, guid: 8fa8cb98fa777cd459aef71df268c2cc, type: 3}
   prefab: {fileID: 1156424916853367509, guid: ecac38706cd74b24cb201deacea4dec0, type: 3}

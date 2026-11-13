@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
   id: radio
   displayName: Radio
+  pickupName: la radio
+  survivalUses:
+  - "buscar una se\xF1al de rescate"
+  - escuchar avisos de peligro antes de acercarme al portal
   hint: "Una voz antigua podr\xEDa guiarte al portal."
-  icon: {fileID: -1879195240866737832, guid: a0ea323b2b6bdeb15add311c142e8bdf, type: 3}
+  icon: {fileID: 21300000, guid: a0ea323b2b6bdeb15add311c142e8bdf, type: 3}
   prefab: {fileID: 1756438538067288, guid: 9b7d674bd208a2a4aa6f2ff5594f9c95, type: 3}

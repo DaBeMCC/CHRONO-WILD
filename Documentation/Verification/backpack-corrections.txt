@@ -1,0 +1,73 @@
+PASS 15 world items
+PASS 2x migration and glow on all items
+PASS 15 independent slot borders
+PASS ray targets valvula
+PASS wall blocks E pickup
+PASS ray targets valvula
+PASS E removes world object 0
+PASS E increments inventory 0
+PASS ray targets usb
+PASS E removes world object 1
+PASS E increments inventory 1
+PASS ray targets tarjeta
+PASS E removes world object 2
+PASS E increments inventory 2
+PASS ray targets radio
+PASS E removes world object 3
+PASS E increments inventory 3
+PASS ray targets pila_c
+PASS E removes world object 4
+PASS E increments inventory 4
+PASS ray targets pila_aa
+PASS E removes world object 5
+PASS E increments inventory 5
+PASS ray targets manivela
+PASS E removes world object 6
+PASS E increments inventory 6
+PASS ray targets linterna
+PASS E removes world object 7
+PASS E increments inventory 7
+PASS ray targets lata
+PASS E removes world object 8
+PASS E increments inventory 8
+PASS ray targets engranaje
+PASS E removes world object 9
+PASS E increments inventory 9
+PASS ray targets encendedor
+PASS E removes world object 10
+PASS E increments inventory 10
+PASS ray targets disquete
+PASS E removes world object 11
+PASS E increments inventory 11
+PASS ray targets cinta
+PASS E removes world object 12
+PASS E increments inventory 12
+PASS ray targets cable
+PASS E removes world object 13
+PASS E increments inventory 13
+PASS ray targets bateria
+PASS E removes world object 14
+PASS E increments inventory 14
+PASS 15/15 reverse order
+PASS duplicate rejected
+PASS fixed slot icon 0
+PASS fixed slot icon 1
+PASS fixed slot icon 2
+PASS fixed slot icon 3
+PASS fixed slot icon 4
+PASS fixed slot icon 5
+PASS fixed slot icon 6
+PASS fixed slot icon 7
+PASS fixed slot icon 8
+PASS fixed slot icon 9
+PASS fixed slot icon 10
+PASS fixed slot icon 11
+PASS fixed slot icon 12
+PASS fixed slot icon 13
+PASS fixed slot icon 14
+PASS P opens backpack
+PASS black fades before content
+PASS open complete after 0.5 seconds
+PASS backpack keeps world running
+PASS slots interactive after reveal
+COMPLETE

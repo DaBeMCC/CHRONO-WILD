@@ -12,6 +12,9 @@ namespace ChronoWild.UI
         public PlayerHealth health;
         public ChronoWild.Inventory.Inventory inventory;
         public CanvasGroup backpack, pause, options, death, damage;
+        public CanvasGroup backpackContent;
+        float backpackOpenedAt;
+        bool openingBackpack;
         public UnityEngine.UI.Image backpackBackground, deathBackground, heart, claw1, claw2;
         public UnityEngine.UI.Text countText, tipText, deathText, healthText, tooltip;
         public UnityEngine.UI.Image[] slotIcons;
@@ -37,7 +40,10 @@ namespace ChronoWild.UI
         void Start() { OnHealth(health ? health.Current : 100); RefreshSlots(); OnState(states ? states.State : GameState.Playing); }
         void OnState(GameState state)
         {
-            SetPanel(backpack, state == GameState.Backpack); SetPanel(pause, state == GameState.Paused); SetPanel(options, false); showOptions = false;
+            openingBackpack = state == GameState.Backpack;
+            backpackOpenedAt = Time.unscaledTime;
+            SetPanel(backpack, false);
+            SetPanel(backpackContent, false); SetPanel(pause, state == GameState.Paused); SetPanel(options, false); showOptions = false;
             SetPanel(death, state == GameState.Dead);
             if (pauseVolume) pauseVolume.enabled = state == GameState.Paused;
             if (state == GameState.Paused && tipText != null) tipText.text = tips[Random.Range(0, tips.Length)];
@@ -68,6 +74,18 @@ namespace ChronoWild.UI
         }
         void Update()
         {
+            if (openingBackpack && backpack && backpackContent)
+            {
+                float t = Time.unscaledTime - backpackOpenedAt;
+                // Ease-in for the dimmer, then a separate 0.2 second content fade.
+                float black = Mathf.Clamp01(t / 0.3f);
+                backpack.alpha = black * black;
+                backpackContent.alpha = Mathf.Clamp01((t - 0.3f) / 0.2f);
+                backpack.blocksRaycasts = true;
+                backpack.interactable = true;
+                backpackContent.blocksRaycasts = t >= 0.5f;
+                backpackContent.interactable = t >= 0.5f;
+            }
             float elapsed = Time.unscaledTime - damageTime;
             if (damage) damage.alpha = elapsed < 0.55f ? Mathf.Sin(Mathf.Clamp01(elapsed / 0.55f) * Mathf.PI) * 0.75f : 0;
             if (heart && health) { float rate = health.Current <= 30 ? 4.5f : 1.2f; heart.rectTransform.localScale = Vector3.one * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * rate * 6.28f)); heart.color = health.Current <= 30 ? new Color(1,0.05f,0.05f) : new Color(1,0.35f,0.35f); }

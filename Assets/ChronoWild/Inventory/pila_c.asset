@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
   id: pila_c
   displayName: Pila C
+  pickupName: la pila C
+  survivalUses:
+  - "dar energ\xEDa al equipo de respaldo"
+  - "mantener activa la se\xF1al de emergencia"
   hint: "La consola necesita energ\xEDa de respaldo."
   icon: {fileID: 21300000, guid: d15102e1826bf5b428bb87eb66a9daef, type: 3}
   prefab: {fileID: 3019161775642865684, guid: 2d6867d6e54753f449d2768e3269e3a9, type: 3}

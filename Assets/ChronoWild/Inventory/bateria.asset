@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChronoWild.Inventory.ItemDefinition
   id: bateria
   displayName: "Bater\xEDa"
+  pickupName: "la bater\xEDa"
+  survivalUses:
+  - alimentar la consola del portal
+  - mantener encendido el equipo de emergencia
   hint: "Una reserva de energ\xEDa para el portal."
-  icon: {fileID: -5561958675533667247, guid: 24be81801594dcac391f69152e176ac7, type: 3}
+  icon: {fileID: 21300000, guid: 24be81801594dcac391f69152e176ac7, type: 3}
   prefab: {fileID: 1123693314251274, guid: b741fa043c0908c499bb320804aa111b, type: 3}
