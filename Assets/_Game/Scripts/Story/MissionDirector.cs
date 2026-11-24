@@ -40,6 +40,11 @@ namespace ChronoWild.Story
 
         string message;
         float messageUntil;
+        // OnGUI runs twice per frame (layout + repaint): cache the strings and rebuild them
+        // only when their values change, instead of allocating new ones every call.
+        string statusText, promptText;
+        int statusRecovered = -1, statusDays = -1;
+        MachinePart promptPart;
         MachinePart nearby;
         GUIStyle hudStyle, messageStyle, promptStyle;
 
@@ -157,10 +162,22 @@ namespace ChronoWild.Story
                 promptStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 20, fontStyle = FontStyle.Bold };
             }
             int days = DaysLeft;
-            string status = $"Piezas de la máquina {Recovered}/{parts.Length}      Impacto en {days} día{(days == 1 ? "" : "s")}";
-            Shadowed(new Rect(0, 14, Screen.width, 30), status, hudStyle, days <= 3 ? new Color(1f, 0.45f, 0.35f) : new Color(1f, 0.92f, 0.78f));
+            if (days != statusDays || Recovered != statusRecovered)
+            {
+                statusDays = days;
+                statusRecovered = Recovered;
+                statusText = $"Piezas de la máquina {Recovered}/{parts.Length}      Impacto en {days} día{(days == 1 ? "" : "s")}";
+            }
+            Shadowed(new Rect(0, 14, Screen.width, 30), statusText, hudStyle, days <= 3 ? new Color(1f, 0.45f, 0.35f) : new Color(1f, 0.92f, 0.78f));
             if (nearby != null)
-                Shadowed(new Rect(0, Screen.height * 0.58f, Screen.width, 30), "[E]  Recuperar: " + nearby.displayName, promptStyle, Color.white);
+            {
+                if (nearby != promptPart)
+                {
+                    promptPart = nearby;
+                    promptText = "[E]  Recuperar: " + nearby.displayName;
+                }
+                Shadowed(new Rect(0, Screen.height * 0.58f, Screen.width, 30), promptText, promptStyle, Color.white);
+            }
             if (!string.IsNullOrEmpty(message) && Time.time < messageUntil)
             {
                 float alpha = Mathf.Clamp01((messageUntil - Time.time) / 1.2f);

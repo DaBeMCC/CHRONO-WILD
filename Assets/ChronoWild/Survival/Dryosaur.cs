@@ -33,6 +33,7 @@ namespace ChronoWild.Survival
         Vector3 heading, home;
         float timer, stride, speed, grazeBlend;
         Terrain terrain;
+        Player.DebugFirstPersonController playerController;
 
         void Awake()
         {
@@ -67,7 +68,9 @@ namespace ChronoWild.Survival
                 return;
             float dt = Time.deltaTime;
             float distance = player ? Flat(transform.position - player.position).magnitude : float.MaxValue;
-            bool playerRunning = player && player.TryGetComponent<Player.DebugFirstPersonController>(out var c) && c.IsRunning;
+            if (player && playerController == null)
+                playerController = player.GetComponent<Player.DebugFirstPersonController>();
+            bool playerRunning = playerController != null && playerController.IsRunning;
             float alarm = fleeRadius * (playerRunning ? 1.6f : 1f);
 
             if (mode != Mode.Flee && distance < alarm)

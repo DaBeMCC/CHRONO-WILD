@@ -10,6 +10,9 @@ namespace ChronoWild.Diagnostics
     /// <summary>
     /// Debug overlay: average/minimum FPS, memory, position, nearest POI and route timer.
     /// F1 hides it. Meant for measuring on the test machine, not for the final game.
+    /// The text is rebuilt four times per second into a cached GUIContent: rebuilding it in every
+    /// OnGUI call allocated ~31 KB per frame (boxing in AppendFormat + ToString + IMGUI temps).
+    /// Hidden by default in release builds.
     /// </summary>
     public class PerformanceOverlay : MonoBehaviour
     {
@@ -18,7 +21,11 @@ namespace ChronoWild.Diagnostics
 
         public bool HiddenByInterface { get; set; }
 
-        bool visible = true;
+        bool visible = Debug.isDebugBuild;
+        const float TextRefresh = .25f;
+        float textAt = -1f;
+        readonly GUIContent content = new GUIContent();
+        Rect box = new Rect(10, 10, 430, 160);
         float accumulated;
         int frames;
         float worstFrame;
@@ -59,7 +66,18 @@ namespace ChronoWild.Diagnostics
                 return;
             if (style == null)
                 style = new GUIStyle(GUI.skin.box) { alignment = TextAnchor.UpperLeft, fontSize = 14, richText = false };
+            // Layout and repaint events both call OnGUI; only rebuild the text a few times per second.
+            if (Event.current.type == EventType.Repaint && Time.unscaledTime >= textAt)
+            {
+                textAt = Time.unscaledTime + TextRefresh;
+                RebuildText();
+            }
+            if (Event.current.type == EventType.Repaint)
+                style.Draw(box, content, false, false, false, false);
+        }
 
+        void RebuildText()
+        {
             text.Clear();
             text.AppendFormat("FPS {0:0} (min {1:0})  {2:0.0} ms\n", avgFps, minFps, avgFps > 0 ? 1000f / avgFps : 0f);
             text.AppendFormat("Memory: {0:0} MB allocated / {1:0} MB reserved\n",
@@ -81,7 +99,7 @@ namespace ChronoWild.Diagnostics
                 AppendNearestPoi(p);
             }
 
-            GUI.Box(new Rect(10, 10, 430, 160), text.ToString(), style);
+            content.text = text.ToString();
         }
 
         void AppendNearestPoi(Vector3 position)
