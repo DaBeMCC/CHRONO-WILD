@@ -6,12 +6,62 @@
  TEXTURE2D(_HeightAO);SAMPLER(sampler_HeightAO);
  CBUFFER_START(UnityPerMaterial)
  float4 _BaseMap_ST;half4 _BaseColor;half4 _MossColor;
- float _Tiling,_Height,_PomDistance;half _NormalStrength,_UsePOM,_Triplanar,_Wetness,_Moss,_EdgeClip;
+ float _Tiling,_Height,_PomDistance;half _NormalStrength,_UsePOM,_Triplanar,_Wetness,_Moss,_EdgeClip,_BarkRelief;
  CBUFFER_END
  float _CW_RainWet;
  struct Attributes{float4 positionOS:POSITION;float3 normalOS:NORMAL;float4 tangentOS:TANGENT;float2 uv:TEXCOORD0;half4 color:COLOR;UNITY_VERTEX_INPUT_INSTANCE_ID};
  struct Varyings{float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;half3 normalWS:TEXCOORD1;half4 tangentWS:TEXCOORD2;float2 uv:TEXCOORD3;half4 color:TEXCOORD4;half fog:TEXCOORD5;UNITY_VERTEX_INPUT_INSTANCE_ID UNITY_VERTEX_OUTPUT_STEREO};
- Varyings GeoVertex(Attributes v){Varyings o=(Varyings)0;UNITY_SETUP_INSTANCE_ID(v);UNITY_TRANSFER_INSTANCE_ID(v,o);UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);o.positionWS=TransformObjectToWorld(v.positionOS.xyz);o.positionCS=TransformWorldToHClip(o.positionWS);VertexNormalInputs n=GetVertexNormalInputs(v.normalOS,v.tangentOS);o.normalWS=n.normalWS;o.tangentWS=half4(n.tangentWS,v.tangentOS.w*GetOddNegativeScale());o.uv=v.uv;o.color=v.color;o.fog=ComputeFogFactor(o.positionCS.z);return o;}
+ #if defined(GEO_BARK_RELIEF)
+ void ShapeTrunkBase(inout float3 positionWS, inout half3 normalWS)
+ {
+  float3 pivot = TransformObjectToWorld(float3(0, 0, 0));
+  float3 offset = positionWS - pivot;
+  float radius = length(offset.xz);
+  UNITY_BRANCH
+  if (_BarkRelief > 0 && offset.y > -.85 && offset.y < 2.65 && radius > .035 && radius < 2.6)
+  {
+   float2 radial = offset.xz / radius;
+   float angle = atan2(radial.y, radial.x);
+   float phase = angle * 5.0 + dot(pivot.xz, float2(.27, .19)) + offset.y * .45;
+   float sine, cosine;
+   sincos(phase, sine, cosine);
+   float ridge = .5 + .5 * cosine;
+   float taper = saturate(1.0 - max(offset.y, 0.0) / 2.65);
+   float baseFade = smoothstep(-.85, -.35, offset.y);
+   float outerFade = 1.0 - smoothstep(1.5, 2.6, radius);
+   float amplitude = min(radius * .85, .48) * _BarkRelief * baseFade * outerFade;
+   float flare = amplitude * taper * taper * (.25 + .75 * ridge * ridge);
+   positionWS.xz += radial * flare;
+
+   // Tilt shading with the taper and the sides of each buttress.
+   float sideSlope = -3.75 * sine * ridge * amplitude * taper * taper / max(radius, .1);
+   float2 tangent = float2(-radial.y, radial.x);
+   float radialNormal = dot(normalWS.xz, radial);
+   normalWS = normalize(normalWS + radialNormal * float3(-tangent.x * sideSlope,
+       2.0 * flare / max(taper * 2.65, .25), -tangent.y * sideSlope));
+  }
+ }
+ #endif
+
+ Varyings GeoVertex(Attributes v)
+ {
+  Varyings o = (Varyings)0;
+  UNITY_SETUP_INSTANCE_ID(v);
+  UNITY_TRANSFER_INSTANCE_ID(v, o);
+  UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+  o.positionWS = TransformObjectToWorld(v.positionOS.xyz);
+  VertexNormalInputs inputs = GetVertexNormalInputs(v.normalOS, v.tangentOS);
+  o.normalWS = inputs.normalWS;
+ #if defined(GEO_BARK_RELIEF)
+  ShapeTrunkBase(o.positionWS, o.normalWS);
+ #endif
+  o.positionCS = TransformWorldToHClip(o.positionWS);
+  o.tangentWS = half4(inputs.tangentWS, v.tangentOS.w * GetOddNegativeScale());
+  o.uv = v.uv;
+  o.color = v.color;
+  o.fog = ComputeFogFactor(o.positionCS.z);
+  return o;
+ }
  half Hash(float2 p){return frac(sin(dot(floor(p*130),float2(12.9898,78.233)))*43758.5453);}
  void Edge(Varyings v){if(_EdgeClip>.5)clip(v.color.a-.001);}
  float2 Relief(float2 uv,float3 view,float distance)
@@ -32,7 +82,22 @@
   #endif
   return uv;
  }
- void SamplePlane(float2 uv,float3 view,float distance,out half3 albedo,out half3 normal,out half3 mask){uv=Relief(uv,view,distance);albedo=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv).rgb;normal=UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap,sampler_BumpMap,uv),_NormalStrength);half3 micro=UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap,sampler_BumpMap,uv*5.37),.13*saturate((14-distance)/5));normal=normalize(half3(normal.xy+micro.xy,normal.z));mask=SAMPLE_TEXTURE2D(_HeightAO,sampler_HeightAO,uv).rgb;}
+ void SamplePlane(float2 uv, float3 view, float distance, out half3 albedo, out half3 normal, out half3 mask)
+ {
+  uv = Relief(uv, view, distance);
+  albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb;
+  normal = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uv), _NormalStrength);
+  half microStrength = .13h * saturate((12 - distance) / 5);
+  float2 microUV = uv * 5.37;
+  float2 dx = ddx(microUV), dy = ddy(microUV);
+  UNITY_BRANCH
+  if (microStrength > 0)
+  {
+   half3 micro = UnpackNormalScale(SAMPLE_TEXTURE2D_GRAD(_BumpMap, sampler_BumpMap, microUV, dx, dy), microStrength);
+   normal = normalize(half3(normal.xy + micro.xy, normal.z));
+  }
+  mask = SAMPLE_TEXTURE2D(_HeightAO, sampler_HeightAO, uv).rgb;
+ }
  void Surface(Varyings v,out SurfaceData s,out half3 normal)
  {
   half3 n=normalize(v.normalWS);float3 view=GetWorldSpaceNormalizeViewDir(v.positionWS);float distance=length(GetCameraPositionWS()-v.positionWS);half3 albedo,tn,mask;
@@ -52,8 +117,40 @@
    normal=normalize(n+float3(tn.x,0,-tn.y));
   #endif
   float macro=sin(v.positionWS.x*.63+sin(v.positionWS.z*.31)*2)*sin(v.positionWS.z*.47+v.positionWS.y*.75)*.5+.5;
-  half wet=max(_Wetness*lerp(.35,1,macro),_CW_RainWet*.85);half moss=_Moss*smoothstep(.30,.80,n.y)*smoothstep(.25,.68,macro)*(1-wet*.3);
-  albedo*=lerp(.86,1.07,macro);albedo=lerp(albedo,albedo*_MossColor.rgb*2.1,moss);
+  half wet = max(_Wetness * lerp(.35h, 1.0h, macro), _CW_RainWet * .85h);
+  // The packed surface mask breaks the patch edge and favours sheltered crevices.
+  half sheltered = (1.0h - mask.g) * .65h + (1.0h - mask.r) * .35h;
+  half growth = smoothstep(.28h, .74h, macro * .65h + sheltered * .35h);
+  half support = max(smoothstep(.12h, .68h, n.y), sheltered * lerp(.16h, .58h, _Wetness));
+  half moss = saturate(_Moss * growth * support * 1.8h);
+  half brightness = dot(albedo, half3(.25h, .65h, .10h));
+  half3 mossTint = .32h + _MossColor.rgb * 3.0h;
+  albedo *= lerp(.86h, 1.07h, macro);
+  albedo = lerp(albedo, brightness * mossTint, moss);
+ #if defined(GEO_BARK_RELIEF)
+  UNITY_BRANCH
+  if (_BarkRelief > 0 && distance < 16)
+  {
+   // Longitudinal furrows use two planar projections so they wrap around the trunk.
+   float3 p = v.positionWS;
+   float2 warp = sin(p.y * float2(2.3, 1.7) + p.xz * float2(2.1, 2.7));
+   float2 phase = p.zx * float2(29.0, 32.0) + warp * 1.3;
+   half2 side = abs(n.xz);
+   side *= side;
+   float2 sine, cosine;
+   sincos(phase, sine, cosine);
+   half2 wave = .5h + .5h * cosine;
+   half2 groove = wave * wave;
+   half detail = _BarkRelief * (1.0h - smoothstep(6.0, 16.0, distance));
+   half2 slope = -sine * wave * side;
+   half3 gradient = half3(slope.y, 0, slope.x);
+   gradient -= normal * dot(normal, gradient);
+   normal = normalize(normal + gradient * (detail * .52h));
+   half cavity = dot(groove, side) * detail * (1.0h - moss * .55h);
+   albedo *= 1.0h - cavity * .28h;
+   mask.g *= 1.0h - cavity * .2h;
+  }
+ #endif
   albedo*=lerp(1,.67,wet);
   s=(SurfaceData)0;s.albedo=albedo*_BaseColor.rgb;s.alpha=1;s.metallic=0;s.specular=half3(.04,.04,.04);s.smoothness=lerp(1-mask.b,.73,wet)*lerp(1,.48,moss);s.occlusion=lerp(.6,1,mask.g);s.normalTS=half3(0,0,1);
  }

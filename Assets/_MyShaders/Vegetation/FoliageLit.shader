@@ -96,8 +96,14 @@ Shader "CHRONO WILD/Vegetation/Foliage Lit"
     SurfaceData surface=(SurfaceData)0;surface.albedo=leaf.rgb;surface.alpha=1;surface.metallic=0;surface.specular=half3(.04,.04,.04);surface.smoothness=_Smoothness;surface.normalTS=half3(0,0,1);surface.occlusion=1;
     half4 color=UniversalFragmentPBR(data,surface);
     Light sun=GetMainLight(v.shadowCoord);
-    half back=pow(saturate(dot(-sun.direction,data.viewDirectionWS)),3)*.7+saturate(dot(-n,sun.direction))*.3;
-    color.rgb+=leaf.rgb*sun.color*back*_Transmission*sun.distanceAttenuation*saturate(sun.shadowAttenuation+.15);
+    // Thin leaves transmit light on the back side, modulated by the existing atlas.
+    half alignment = saturate(dot(-sun.direction, data.viewDirectionWS));
+    half backFace = saturate(.25h - dot(n, sun.direction));
+    half through = alignment * alignment * backFace;
+    half thickness = saturate(dot(leaf.rgb, half3(.25h, .65h, .10h)) * 2.0h);
+    half3 transmitted = leaf.rgb * half3(1.12h, 1.05h, .72h);
+    color.rgb += transmitted * sun.color * through * lerp(.70h, 1.0h, thickness)
+        * _Transmission * sun.distanceAttenuation * saturate(sun.shadowAttenuation + .12h);
     color.rgb=MixFog(color.rgb,v.fog);return half4(color.rgb,1);
    }
    ENDHLSL

@@ -44,6 +44,8 @@ namespace ChronoWild.Story
 
         // Seen once per session: restarting after a game over goes straight back to the beach.
         static bool seen;
+        /// <summary>Set before loading the island to skip the intro once (continuing a saved game).</summary>
+        public static bool SkipNext { get; set; }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetSession() { seen = false; Playing = false; }
 
@@ -61,6 +63,7 @@ namespace ChronoWild.Story
         bool pendingSeek;
         long seekFrom;
         GameObject videoScreen;
+        GameObject skipPrompt;
         RenderTexture videoTexture;
 
         void Start()
@@ -68,7 +71,12 @@ namespace ChronoWild.Story
             var clock = DayNightCycle.Instance;
             if (clock != null)
                 clock.SetHour(startHour);
-            if (playOnStart && !seen)
+            if (SkipNext)
+            {
+                SkipNext = false;
+                Finish(true);
+            }
+            else if (playOnStart && !seen)
                 Play();
             else
                 Finish(seen);
@@ -77,6 +85,9 @@ namespace ChronoWild.Story
         public void Play()
         {
             Playing = true;
+            if (skipPrompt == null)
+                BuildSkipPrompt();
+            skipPrompt.SetActive(true);
             controller.enabled = false;
             playerCamera.enabled = false;
             cinematicCamera.gameObject.SetActive(true);
@@ -115,8 +126,6 @@ namespace ChronoWild.Story
             video.audioOutputMode = soundtrack != null ? VideoAudioOutputMode.None : VideoAudioOutputMode.Direct;
             video.errorReceived -= OnVideoError;
             video.errorReceived += OnVideoError;
-            video.prepareCompleted -= OnVideoPrepared;
-            video.prepareCompleted += OnVideoPrepared;
             video.Prepare();
         }
 
@@ -141,9 +150,58 @@ namespace ChronoWild.Story
             fitter.aspectRatio = 16f / 9f;
         }
 
-        void OnVideoPrepared(VideoPlayer v)
+        void BuildSkipPrompt()
         {
-            // Playback starts from UpdateVideo once the scene has settled.
+            skipPrompt = new GameObject("Intro Skip Prompt", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+            skipPrompt.transform.SetParent(transform, false);
+            var canvas = skipPrompt.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 101;
+            var scaler = skipPrompt.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1280, 720);
+
+            var row = new GameObject("Omitir introducción", typeof(RectTransform)).GetComponent<RectTransform>();
+            row.SetParent(skipPrompt.transform, false);
+            row.anchorMin = row.anchorMax = Vector2.right;
+            row.pivot = Vector2.right;
+            row.anchoredPosition = new Vector2(-28, 26);
+            row.sizeDelta = new Vector2(213, 31);
+
+            var icon = AddPromptMark(row, new Vector2(-87, 0), new Vector2(32, 18), new Color(.08f, .11f, .10f, .85f));
+            var keyBorder = icon.gameObject.AddComponent<Outline>();
+            keyBorder.effectColor = new Color(.90f, .92f, .86f, .8f);
+            keyBorder.effectDistance = new Vector2(1, 1);
+            var glyph = new Color(.95f, .95f, .90f);
+            AddPromptMark(icon, new Vector2(0, -2), new Vector2(15, 1.5f), glyph);
+            AddPromptMark(icon, new Vector2(-7, 0), new Vector2(1.5f, 4.5f), glyph);
+            AddPromptMark(icon, new Vector2(7, 0), new Vector2(1.5f, 4.5f), glyph);
+
+            var hint = new GameObject("Texto", typeof(RectTransform), typeof(Text)).GetComponent<Text>();
+            hint.rectTransform.SetParent(row, false);
+            hint.rectTransform.anchorMin = Vector2.zero;
+            hint.rectTransform.anchorMax = Vector2.one;
+            hint.rectTransform.offsetMin = new Vector2(43, 0);
+            hint.rectTransform.offsetMax = Vector2.zero;
+            hint.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            hint.fontSize = 17;
+            hint.alignment = TextAnchor.MiddleLeft;
+            hint.color = glyph;
+            hint.raycastTarget = false;
+            hint.text = "Omitir introducción";
+            var outline = hint.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0, 0, 0, .85f);
+        }
+
+        static RectTransform AddPromptMark(RectTransform parent, Vector2 position, Vector2 size, Color color)
+        {
+            var mark = new GameObject("Marca de tecla", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            mark.rectTransform.SetParent(parent, false);
+            mark.rectTransform.anchoredPosition = position;
+            mark.rectTransform.sizeDelta = size;
+            mark.color = color;
+            mark.raycastTarget = false;
+            return mark.rectTransform;
         }
 
         void StartPlayback(VideoPlayer v)
@@ -177,7 +235,14 @@ namespace ChronoWild.Story
         {
             if (phase != Phase.Video)
                 return;
+            StopVideo();
+            PlayTimeline();
+        }
+
+        void StopVideo()
+        {
             phase = Phase.None;
+            video.errorReceived -= OnVideoError;
             video.Stop();
             if (soundtrack != null)
                 soundtrack.Stop();
@@ -187,7 +252,6 @@ namespace ChronoWild.Story
                 videoTexture.Release();
             cinematicCamera.cullingMask = savedCullingMask;
             cinematicCamera.clearFlags = CameraClearFlags.Skybox;
-            PlayTimeline();
         }
 
         /// <summary>
@@ -204,7 +268,7 @@ namespace ChronoWild.Story
                 // Hold on black until the first heavy frames after loading the scene are over, so
                 // the video does not start (and stutter) while the world is still being set up.
                 smoothFrames = Time.unscaledDeltaTime < 0.05f ? smoothFrames + 1 : 0;
-                bool settled = smoothFrames >= 20 || Time.realtimeSinceStartup - settleStart > 8f;
+                bool settled = smoothFrames >= 4 || Time.realtimeSinceStartup - settleStart > 1.5f;
                 if (video.isPrepared && settled)
                     StartPlayback(video);
                 else if (!video.isPrepared && (videoWait += dt) > videoTimeout)
@@ -315,8 +379,27 @@ namespace ChronoWild.Story
             Playing = false;
             if (director != null)
                 director.stopped -= OnStopped;
+            if (video != null)
+                video.errorReceived -= OnVideoError;
             if (videoTexture != null)
+            {
                 videoTexture.Release();
+                Destroy(videoTexture);
+            }
+        }
+
+        public void Skip()
+        {
+            if (phase == Phase.None)
+                return;
+            if (phase == Phase.Video)
+                StopVideo();
+            else
+            {
+                director.stopped -= OnStopped;
+                director.Stop();
+            }
+            Finish();
         }
 
         void Finish() => Finish(false);
@@ -327,6 +410,8 @@ namespace ChronoWild.Story
             seen = true;
             Playing = false;
             phase = Phase.None;
+            if (skipPrompt != null)
+                skipPrompt.SetActive(false);
             // Leaving play mode also stops the director, when the cameras may already be gone.
             if (cinematicCamera == null || playerCamera == null || controller == null)
                 return;
@@ -347,13 +432,8 @@ namespace ChronoWild.Story
             if (phase == Phase.None)
                 return;
             var keyboard = Keyboard.current;
-            if (keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame))
-            {
-                if (phase == Phase.Video)
-                    EndVideo();
-                else
-                    director.Stop();
-            }
+            if (keyboard?.spaceKey.wasPressedThisFrame == true)
+                Skip();
         }
     }
 }

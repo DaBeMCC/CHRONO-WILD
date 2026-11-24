@@ -34,7 +34,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Age: 0.15
-    - _BumpScale: 0.8
+    - _BumpScale: 1.04
     - _Cutoff: 0.45
     - _GustStrength: 0.25
     - _Smoothness: 0.32

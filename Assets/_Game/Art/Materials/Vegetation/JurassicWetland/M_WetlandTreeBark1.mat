@@ -40,9 +40,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _EdgeClip: 0
-    - _Height: 0.007
+    - _BarkRelief: 0.69
+    - _Height: 0.012
     - _Moss: 0.38
-    - _NormalStrength: 0.6
+    - _NormalStrength: 0.89
     - _PomDistance: 8
     - _Tiling: 0.55
     - _Triplanar: 1

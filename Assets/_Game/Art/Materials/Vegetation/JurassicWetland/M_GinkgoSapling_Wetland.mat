@@ -34,10 +34,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _Age: 0.28
-    - _BumpScale: 0.3
+    - _BumpScale: 0.58
     - _Cutoff: 0.4
     - _Smoothness: 0.18
-    - _Transmission: 0.25
+    - _Transmission: 0.42
     - _Variation: 0.38
     - _WindStrength: 0.055
     m_Colors:

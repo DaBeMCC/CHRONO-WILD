@@ -16,6 +16,8 @@ namespace ChronoWild.Diagnostics
         [SerializeField] DebugFirstPersonController player;
         [SerializeField] float sampleWindow = 1f;
 
+        public bool HiddenByInterface { get; set; }
+
         bool visible = true;
         float accumulated;
         int frames;
@@ -53,7 +55,7 @@ namespace ChronoWild.Diagnostics
 
         void OnGUI()
         {
-            if (!visible)
+            if (!visible || HiddenByInterface || Time.timeScale == 0f)
                 return;
             if (style == null)
                 style = new GUIStyle(GUI.skin.box) { alignment = TextAnchor.UpperLeft, fontSize = 14, richText = false };

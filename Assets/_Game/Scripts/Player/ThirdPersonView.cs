@@ -22,6 +22,7 @@ namespace ChronoWild.Player
         public Key toggleKey = Key.V;
 
         public bool ThirdPerson { get; private set; }
+        public Vector3 InteractionOrigin => ThirdPerson ? cam.parent.TransformPoint(eyeLocal) : cam.position;
 
         Transform cam;
         Vector3 eyeLocal;

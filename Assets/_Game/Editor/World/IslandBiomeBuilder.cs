@@ -1164,6 +1164,111 @@ namespace ChronoWild.Editor.World
             }, rng);
         }
 
+        [MenuItem("CHRONO WILD/World/Place Jurassic Wetland Landscape Details")]
+        public static void PlaceLandscapeDetails()
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            var terrain = UnityEngine.Terrain.activeTerrain;
+            if (scene.name != "Jungle_JurassicWetland" || terrain == null || terrain.gameObject.scene != scene)
+                throw new InvalidOperationException("Open Jurassic Wetland with its terrain before placing landscape details.");
+
+            var rocks = Prefabs(Geo, "PF_Rock1", "PF_Rock3", "PF_Rock5");
+            var saplings = Prefabs(Veg, "JurassicWetland/PF_GinkgoSapling1", "JurassicWetland/PF_GinkgoSapling2");
+            var ferns = Prefabs(Veg, "JurassicRealism/PF_JR_TreeFern_A", "JurassicRealism/PF_JR_TreeFern_B");
+            var conifers = Prefabs(Veg, "DepthStudy/PF_ConiferDepth1", "DepthStudy/PF_ConiferDepth2");
+            var damp = Load<Material>("Assets/_Game/Art/Materials/Geology/M_Rock_Damp.mat");
+            var basalt = Load<Material>("Assets/_Game/Art/Biomes/Materials/M_Basalt.mat");
+            var granite = Load<Material>("Assets/_Game/Art/Biomes/Materials/M_Granite_Lichen.mat");
+
+            var root = FreshRoot("Landscape Details");
+            var random = new System.Random(Seed + 171);
+            Physics.SyncTransforms();
+
+            float Clear(float x, float z, float h, float radius)
+            {
+                // Keep the landing area, machine, and beach-to-forest route readable.
+                if ((new Vector2(x - 305f, z - 114f)).sqrMagnitude < 18f * 18f ||
+                    (z > 114f && z < 178f && Mathf.Abs(x - 305f) < 5f))
+                    return 0f;
+                return Physics.CheckSphere(new Vector3(x, h + radius + 0.3f, z), radius,
+                    Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) ? 0f : 1f;
+            }
+
+            float Patches(float x, float z) => Smooth(0.34f, 0.65f, Mathf.PerlinNoise(x * 0.07f, z * 0.07f));
+            Transform Region(string name)
+            {
+                var group = new GameObject(name).transform;
+                group.SetParent(root, false);
+                return group;
+            }
+
+            var coast = Region("Coast · rock clusters and tree line");
+            Scatter(terrain, coast, new ScatterSpec
+            {
+                prefabs = rocks, count = 28, minDistance = 2.4f, scale = new Vector2(0.28f, 0.65f),
+                sink = 0.12f, align = 0.75f, tilt = 16f,
+                probability = (x, z, h, slope) => h > 0.7f && h < 3.6f && slope < 27f
+                    ? BeachMask(terrain, x, z, h, slope) * Patches(x, z) * Clear(x, z, h, 0.6f) : 0f
+            }, random);
+            Scatter(terrain, coast, new ScatterSpec
+            {
+                area = new Rect(155f, 119f, 235f, 44f), prefabs = saplings, count = 10,
+                minDistance = 6f, scale = new Vector2(0.62f, 0.87f),
+                probability = (x, z, h, slope) => h > 3f && h < 12f && slope < 20f
+                    ? Patches(x, z) * Clear(x, z, h, 2.1f) : 0f
+            }, random);
+
+            var forest = Region("Forest · understory and mossy stone");
+            Scatter(terrain, forest, new ScatterSpec
+            {
+                area = JungleBox, prefabs = rocks, count = 24, minDistance = 3.5f, scale = new Vector2(0.4f, 0.95f),
+                materials = new[] { damp }, sink = 0.22f, align = 0.75f, tilt = 20f,
+                probability = (x, z, h, slope) => h > 3f && slope < 29f
+                    ? Patches(x, z) * Clear(x, z, h, 0.9f) : 0f
+            }, random);
+            Scatter(terrain, forest, new ScatterSpec
+            {
+                area = JungleBox, prefabs = ferns, count = 16, minDistance = 5f, scale = new Vector2(0.65f, 0.95f),
+                probability = (x, z, h, slope) => h > 3f && slope < 20f
+                    ? Patches(x, z) * Clear(x, z, h, 1.5f) : 0f
+            }, random);
+
+            var swamp = Region("Swamp · raised banks");
+            Scatter(terrain, swamp, new ScatterSpec
+            {
+                area = SwampArea, prefabs = ferns, count = 14, minDistance = 4f, scale = new Vector2(0.65f, 0.98f),
+                probability = (x, z, h, slope) => h > SwampWaterLevel + 0.25f && slope < 20f
+                    ? SwampMask(x, z) * (1f - SwampInner(x, z)) * Clear(x, z, h, 1.25f) : 0f
+            }, random);
+
+            var moor = Region("Moor · lichen and sparse conifers");
+            Scatter(terrain, moor, new ScatterSpec
+            {
+                area = MoorArea, prefabs = conifers, count = 8, minDistance = 13f,
+                scale = new Vector2(0.32f, 0.48f), tilt = 7f,
+                probability = (x, z, h, slope) => h > 5f && slope < 22f
+                    ? MoorMask(x, z) * Patches(x, z) * Clear(x, z, h, 2.1f) : 0f
+            }, random);
+            Scatter(terrain, moor, new ScatterSpec
+            {
+                area = MoorArea, prefabs = rocks, count = 14, minDistance = 5f, scale = new Vector2(0.55f, 1.2f),
+                materials = new[] { granite }, sink = 0.23f, align = 0.8f, tilt = 20f,
+                probability = (x, z, h, slope) => h > 5f && slope < 29f
+                    ? MoorMask(x, z) * Patches(x, z) * Clear(x, z, h, 1.1f) : 0f
+            }, random);
+
+            var volcano = Region("Volcano · basalt scree");
+            Scatter(terrain, volcano, new ScatterSpec
+            {
+                area = VolcanoArea, prefabs = rocks, count = 16, minDistance = 3.5f, scale = new Vector2(0.32f, 0.88f),
+                materials = new[] { basalt }, sink = 0.28f, align = 0.85f, tilt = 26f, noShadows = true,
+                probability = (x, z, h, slope) => h > 6f && slope > 9f && slope < 34f
+                    ? Volcano(x, z) * Patches(x, z) * Clear(x, z, h, 0.75f) : 0f
+            }, random);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+        }
+
         // ------------------------------------------------------------------ Swamp water and atmosphere
 
         static void BuildSwampWater()

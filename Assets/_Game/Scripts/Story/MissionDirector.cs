@@ -27,6 +27,8 @@ namespace ChronoWild.Story
         AudioSource voice;
 
         public int Recovered { get; private set; }
+        public bool PartInReach => nearby != null;
+        public bool InterfaceOpen { get; set; }
         public int DaysLeft
         {
             get
@@ -42,6 +44,7 @@ namespace ChronoWild.Story
         GUIStyle hudStyle, messageStyle, promptStyle;
 
         void OnEnable() => Instance = this;
+        void OnDisable() { if (Instance == this) Instance = null; }
 
         void Start()
         {
@@ -74,6 +77,8 @@ namespace ChronoWild.Story
         void UpdateGuide()
         {
             // Only the nearest unrecovered part keeps its beam, so the island always says where to go next.
+            if (player == null)
+                return;
             MachinePart next = null;
             float best = float.MaxValue;
             foreach (var part in parts)
@@ -89,6 +94,8 @@ namespace ChronoWild.Story
         void Update()
         {
             nearby = null;
+            if (player == null)
+                return;
             foreach (var part in parts)
             {
                 if (part == null || part.Collected) continue;
@@ -96,7 +103,8 @@ namespace ChronoWild.Story
                     nearby = part;
             }
             var keyboard = Keyboard.current;
-            if (nearby != null && keyboard != null && keyboard.eKey.wasPressedThisFrame)
+            if (nearby != null && !IntroCinematic.Playing && Time.timeScale > 0 &&
+                Cursor.lockState == CursorLockMode.Locked && keyboard?.eKey.wasPressedThisFrame == true)
             {
                 nearby.Collect();
                 Recovered++;
@@ -115,9 +123,32 @@ namespace ChronoWild.Story
 
         void ShowFinal() => ShowMessage(finalEntry, 12f, finalVoice);
 
+        /// <summary>Which parts are recovered, in the order of <see cref="parts"/> (for saved games).</summary>
+        public bool[] CollectedFlags()
+        {
+            var flags = new bool[parts.Length];
+            for (int i = 0; i < parts.Length; i++)
+                flags[i] = parts[i] != null && parts[i].Collected;
+            return flags;
+        }
+
+        /// <summary>Restores recovered parts from a saved game without replaying their journal entries.</summary>
+        public void RestoreProgress(bool[] collected)
+        {
+            if (collected == null)
+                return;
+            for (int i = 0; i < parts.Length && i < collected.Length; i++)
+                if (collected[i] && parts[i] != null && !parts[i].Collected)
+                {
+                    parts[i].Collect();
+                    Recovered++;
+                }
+            UpdateGuide();
+        }
+
         void OnGUI()
         {
-            if (!hudVisible || IntroCinematic.Playing)
+            if (!hudVisible || InterfaceOpen || IntroCinematic.Playing)
                 return;
             if (hudStyle == null)
             {

@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using ChronoWild.Prototype;
+using ChronoWild.Story;
 
 namespace ChronoWild.Core
 {
@@ -18,12 +19,13 @@ namespace ChronoWild.Core
         [Tooltip("P opens the backpack. Off where there is no inventory.")]
         public bool backpackEnabled = true;
         public event Action<float> SensitivityChanged;
-        void Awake() { Instance = this; Time.timeScale = 1; if (!player) player = FindFirstObjectByType<PrototypePlayer>(); Apply(); }
+        AsyncOperation returnToMenu;
+        void Awake() { Instance = this; Time.timeScale = 1; if (!player) player = FindAnyObjectByType<PrototypePlayer>(); Apply(); }
         void OnDestroy() { if (Instance == this) Instance = null; Time.timeScale = 1; }
         void Update()
         {
             var k = Keyboard.current;
-            if (k == null) return;
+            if (k == null || IntroCinematic.Playing) return;
             if (State == GameState.Dead) { if (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame) MainMenu(); return; }
             if (backpackEnabled && k.pKey.wasPressedThisFrame && (State == GameState.Playing || State == GameState.Backpack)) SetState(State == GameState.Backpack ? GameState.Playing : GameState.Backpack);
             if (k.escapeKey.wasPressedThisFrame)
@@ -46,7 +48,16 @@ namespace ChronoWild.Core
         }
         public void Resume() => SetState(GameState.Playing);
         // Without a main menu in the build, "back to menu" restarts the level.
-        public void MainMenu() { Time.timeScale = 1; if (Application.CanStreamedLevelBeLoaded("MainMenu")) SceneManager.LoadScene("MainMenu"); else SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex >= 0 ? SceneManager.GetActiveScene().buildIndex : 0); }
+        public void MainMenu()
+        {
+            if (returnToMenu != null)
+                return;
+
+            int currentScene = SceneManager.GetActiveScene().buildIndex;
+            returnToMenu = Application.CanStreamedLevelBeLoaded("MainMenu")
+                ? SceneManager.LoadSceneAsync("MainMenu")
+                : SceneManager.LoadSceneAsync(Mathf.Max(currentScene, 0));
+        }
         public void SetSensitivity(float value) { if (player) player.mouseSensitivity = value; SensitivityChanged?.Invoke(value); }
         public void SetVolume(float value) => AudioListener.volume = value;
     }

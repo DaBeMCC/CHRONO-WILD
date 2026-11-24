@@ -15,9 +15,11 @@ Shader "CHRONO WILD/Environment/Geology Lit"
   [Toggle(_TRIPLANAR)] _Triplanar("Triplanar Projection",Float)=1
   _Wetness("Wetness",Range(0,1))=.2
   _Moss("Moss Coverage",Range(0,1))=.25
+  _BarkRelief("Bark Furrows",Range(0,1))=0
   _EdgeClip("Ground Edge Feather",Range(0,1))=0
  }
  HLSLINCLUDE
+ #define GEO_BARK_RELIEF
  #include "GeologySurface.hlsl"
  ENDHLSL
  SubShader
@@ -43,6 +45,7 @@ Shader "CHRONO WILD/Environment/Geology Lit"
    #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
    #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
    #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+   half _CW_EnvDim;
    half4 GeoFragment(Varyings v):SV_Target{UNITY_SETUP_INSTANCE_ID(v);UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(v);Edge(v);SurfaceData s;half3 n;Surface(v,s,n);InputData d=(InputData)0;d.positionWS=v.positionWS;d.normalWS=n;d.viewDirectionWS=GetWorldSpaceNormalizeViewDir(v.positionWS);
    #if defined(_MAIN_LIGHT_SHADOWS_SCREEN)
     d.shadowCoord=ComputeScreenPos(TransformWorldToHClip(v.positionWS));
@@ -55,6 +58,9 @@ Shader "CHRONO WILD/Environment/Geology Lit"
     #else
     d.bakedGI=SampleSH(n);
     #endif
+    // Keep a little diffuse sky bounce on shaded bark, scaled by the world clock and weather.
+    half skyBounce = _BarkRelief * (1.0h - saturate(_CW_EnvDim));
+    d.bakedGI = max(d.bakedGI, half3(.21h, .24h, .20h) * skyBounce);
     d.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(v.positionCS);d.shadowMask=half4(1,1,1,1);half4 c=UniversalFragmentPBR(d,s);c.rgb=MixFog(c.rgb,v.fog);return half4(c.rgb,_EdgeClip>.5?v.color.a:1);}
    ENDHLSL
   }

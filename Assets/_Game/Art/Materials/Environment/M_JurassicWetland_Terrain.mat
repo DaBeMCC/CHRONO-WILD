@@ -137,11 +137,11 @@ Material:
     - _HeightTransition: 0.3
     - _JF_CavityAO: 0.6
     - _JF_Depth: 0.085
-    - _JF_FadeEnd: 26
-    - _JF_FadeStart: 10
+    - _JF_FadeEnd: 16
+    - _JF_FadeStart: 7
     - _JF_HeightContrast: 1.8
     - _JF_MacroVariation: 0.35
-    - _JF_MaxSteps: 28
+    - _JF_MaxSteps: 16
     - _JF_ShadowStrength: 0.85
     - _Metallic: 0
     - _Metallic0: 0

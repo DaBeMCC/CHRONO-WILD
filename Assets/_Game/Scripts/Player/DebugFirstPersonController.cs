@@ -5,7 +5,7 @@ namespace ChronoWild.Player
 {
     /// <summary>
     /// Minimal first-person controller for validating terrain scale and travel routes.
-    /// Not the final game controller: no stamina, no interaction, no swimming.
+    /// Survival rules can gate sprinting without replacing movement.
     /// Keys: WASD move, Shift run, Space jump, T resets the route timer,
     /// Esc releases the cursor.
     /// </summary>
@@ -25,6 +25,10 @@ namespace ChronoWild.Player
         public float DistanceTravelled { get; private set; }
         public float TimerSeconds { get; private set; }
         public bool IsRunning { get; private set; }
+        public bool SprintAvailable { get; set; } = true;
+        /// <summary>Scales walking and running speed (survival: carrying logs, exhaustion).</summary>
+        public float SpeedMultiplier { get; set; } = 1f;
+        public bool JumpAvailable { get; set; } = true;
         public float GroundSlope { get; private set; }
         /// <summary>Raw mouse movement this frame, shown by the info panel.</summary>
         public Vector2 LastMouseDelta { get; private set; }
@@ -86,14 +90,14 @@ namespace ChronoWild.Player
             if (keyboard.aKey.isPressed) input.x -= 1f;
             input = Vector2.ClampMagnitude(input, 1f);
 
-            IsRunning = keyboard.leftShiftKey.isPressed && input.y > 0f;
-            float speed = IsRunning ? runSpeed : walkSpeed;
+            IsRunning = SprintAvailable && keyboard.leftShiftKey.isPressed && input.y > 0f;
+            float speed = (IsRunning ? runSpeed : walkSpeed) * SpeedMultiplier;
             Vector3 move = (transform.right * input.x + transform.forward * input.y) * speed;
 
             if (controller.isGrounded)
             {
                 verticalVelocity = -2f;
-                if (keyboard.spaceKey.wasPressedThisFrame)
+                if (JumpAvailable && keyboard.spaceKey.wasPressedThisFrame)
                     verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
             }
             verticalVelocity += gravity * Time.deltaTime;

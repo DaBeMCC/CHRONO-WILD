@@ -1,5 +1,6 @@
 using UnityEngine;
 using ChronoWild.Health;
+using ChronoWild.Survival;
 
 namespace ChronoWild.Prototype
 {
@@ -39,6 +40,15 @@ namespace ChronoWild.Prototype
         [Min(0f)] public float hitRange = 1.4f;
         [Min(0f)] public float hitRecoverySeconds = 2f;
 
+        [Header("Combat")]
+        [Tooltip("Hit points against the player's weapons (axe 2, spear 3, club 4).")]
+        [Min(1)] public int health = 14;
+        [Tooltip("Raw meat portions left behind when it dies.")]
+        [Min(0)] public int meatPortions = 3;
+        [Tooltip("A lit torch keeps it at least this far from the player.")]
+        [Min(0f)] public float torchFearRange = 4.5f;
+        public bool IsDead { get; private set; }
+
         [Header("Territory")]
         [Tooltip("The raptor patrols within this radius of where it starts and gives up a chase far beyond it (0 = anywhere).")]
         [Min(0f)] public float territoryRadius = 0f;
@@ -72,7 +82,7 @@ namespace ChronoWild.Prototype
 
         void Update()
         {
-            if (target == null) return;
+            if (target == null || IsDead) return;
             if (targetHealth == null) targetHealth = target.GetComponentInParent<PlayerHealth>();
             float dt = Time.deltaTime;
             stateElapsed += dt;
@@ -135,6 +145,13 @@ namespace ChronoWild.Prototype
                     direction = toPlayer.normalized;
                     break;
                 case DinoState.Chase:
+                    // A lit torch: circle at a distance instead of closing in.
+                    if (SurvivalRun.TorchLit && distance < torchFearRange)
+                    {
+                        direction = -toPlayer.normalized;
+                        speed = patrolSpeed * 1.4f;
+                        break;
+                    }
                     if (distance <= hitRange)
                     {
                         if (!Physics.Linecast(transform.position + Vector3.up * 1.2f, target.position + Vector3.up * 1.2f, out var obstacle, ~0, QueryTriggerInteraction.Ignore) || obstacle.transform.IsChildOf(target) || obstacle.collider.transform == transform)
@@ -159,7 +176,7 @@ namespace ChronoWild.Prototype
                 direction = Vector3.zero;
                 speed = 0f;
             }
-            if (state == DinoState.HitRecovery) speed = patrolSpeed;
+            if (state == DinoState.HitRecovery && !(SurvivalRun.TorchLit && distance < torchFearRange)) speed = patrolSpeed;
             // Never run into the sea, not even after the player.
             if (speed > 0f && IsWater(transform.position + direction * 2f))
                 speed = 0f;
@@ -183,6 +200,41 @@ namespace ChronoWild.Prototype
         }
 
         static Vector3 Flat(Vector3 v) { v.y = 0f; return v; }
+
+        /// <summary>A weapon hit from the player: knocks it back and makes it recover before chasing again.</summary>
+        public void TakeHit(int damage, Vector3 from)
+        {
+            if (IsDead || damage <= 0) return;
+            health -= damage;
+            Vector3 away = Flat(transform.position - from).normalized;
+            if (controller.enabled) controller.Move(away * 0.7f);
+            if (health <= 0) { Die(); return; }
+            state = DinoState.Chase;   // force a fresh HitRecovery even if it was already recovering
+            Enter(DinoState.HitRecovery);
+        }
+
+        void Die()
+        {
+            IsDead = true;
+            if (animator != null) animator.speed = 0f;
+            controller.enabled = false;
+            StartCoroutine(Collapse());
+        }
+
+        System.Collections.IEnumerator Collapse()
+        {
+            Quaternion start = transform.rotation;
+            Quaternion end = start * Quaternion.Euler(0f, 0f, 88f);
+            for (float t = 0f; t < 1f; t += Time.deltaTime / 0.7f)
+            {
+                transform.rotation = Quaternion.Slerp(start, end, t * t);
+                yield return null;
+            }
+            transform.rotation = end;
+            Carcass.Drop(transform.position + transform.forward * 0.6f, meatPortions);
+            yield return new WaitForSeconds(90f);
+            Destroy(gameObject);
+        }
 
         bool IsWater(Vector3 position)
         {

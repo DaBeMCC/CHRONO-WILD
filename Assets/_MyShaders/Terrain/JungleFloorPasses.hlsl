@@ -375,7 +375,6 @@ void JungleFloorParallax(inout Varyings IN, half4 control, out half hitHeight, o
     float layer = 1.0;
     float2 offset = 0;
     half h = JungleHeight(tc, control, dx, dy);
-    half prevH = h;
     float prevLayer = layer;
     [loop]
     for (int i = 0; i < 32; i++)
@@ -383,7 +382,6 @@ void JungleFloorParallax(inout Varyings IN, half4 control, out half hitHeight, o
         if (i >= steps || layer <= h)
             break;
         prevLayer = layer;
-        prevH = h;
         layer -= stepSize;
         offset += rayTc * stepSize;
         h = JungleHeight(tc + offset, control, dx, dy);
@@ -392,7 +390,7 @@ void JungleFloorParallax(inout Varyings IN, half4 control, out half hitHeight, o
     float2 lo = offset - rayTc * stepSize, hi = offset;
     float loLayer = prevLayer, hiLayer = layer;
     [unroll]
-    for (int b = 0; b < 5; b++)
+    for (int b = 0; b < 3; b++)
     {
         float2 midOffset = (lo + hi) * 0.5;
         float midLayer = (loLayer + hiLayer) * 0.5;
@@ -418,11 +416,11 @@ void JungleFloorParallax(inout Varyings IN, half4 control, out half hitHeight, o
         float2 lightTc = float2(lt.x, lt.z) / max(ndl, 0.2) * depth / _JF_TerrainSize.xz;
         float occluded = 0;
         [unroll]
-        for (int k = 1; k <= 6; k++)
+        for (int k = 1; k <= 4; k++)
         {
-            float s = k / 6.0 * (1.0 - hitHeight);
+            float s = k / 4.0 * (1.0 - hitHeight);
             half hs = JungleHeight(tc + offset + lightTc * s, control, dx, dy);
-            occluded = max(occluded, (hs - (hitHeight + s)) * (1.0 - k / 7.0));
+            occluded = max(occluded, (hs - (hitHeight + s)) * (1.0 - k / 5.0));
         }
         selfShadow = 1.0h - saturate(occluded * 6.0) * _JF_ShadowStrength * fade;
     }
@@ -549,7 +547,12 @@ void SplatmapFragment(
     half4 splatControl = SAMPLE_TEXTURE2D(_Control, sampler_Control, splatUV);
 
     half hitHeight, selfShadow;
+#ifdef TERRAIN_SPLAT_ADDPASS
+    hitHeight = 1.0h;
+    selfShadow = 1.0h;
+#else
     JungleFloorParallax(IN, splatControl, hitHeight, selfShadow);
+#endif
 
     half4 hasMask = half4(_LayerHasMask0, _LayerHasMask1, _LayerHasMask2, _LayerHasMask3);
     half4 masks[4];
@@ -595,8 +598,12 @@ void SplatmapFragment(
     albedo *= lerp(1.0h, selfShadow, sunFacing * floorWeight);
     // Low-frequency brightness and hue drift hides tiling over large areas.
     float2 macroP = IN.positionWS.xz;
-    float macro = JungleNoise(macroP * 0.07) * 0.6 + JungleNoise(macroP * 0.23) * 0.4;
-    albedo *= lerp(1.0h, half3(0.78h, 0.8h, 0.84h) + half3(0.42h, 0.38h, 0.3h) * macro, _JF_MacroVariation);
+    float broad = JungleNoise(macroP * 0.07);
+    float patch = JungleNoise(macroP * 0.23);
+    float macro = broad * 0.6 + patch * 0.4;
+    half3 groundTint = lerp(half3(0.68h, 0.77h, 0.74h), half3(1.13h, 1.08h, 0.94h), macro);
+    albedo *= lerp(1.0h, groundTint, _JF_MacroVariation);
+    smoothness = saturate(smoothness + (0.5h - macro) * 0.24h * _JF_MacroVariation);
 
     // Biome surface response. Soaked porous ground darkens and turns glossy (Lagarde, "Water
     // drop" series); saturated hollows of the parallax relief fill with puddles; on the beach the
@@ -605,15 +612,28 @@ void SplatmapFragment(
     {
         half4 biome = SAMPLE_TEXTURE2D(_CW_BiomeMap, sampler_CW_BiomeMap, IN.positionWS.xz / _CW_BiomeParams.xy);
         float aboveSea = IN.positionWS.y - _CW_BiomeParams.w;
-        float n = JungleNoise(IN.positionWS.xz * 0.17);
-        float runup = 0.2 + 0.45 * (sin(_Time.y * 0.5 + n * 4.0 + IN.positionWS.x * 0.035) * 0.5 + 0.5);
-        half swash = biome.g * (1.0h - smoothstep(runup - 0.06, runup + 0.04, aboveSea));
+        half swash = 0;
+        if (biome.g > 0.002h && aboveSea < 0.69)
+        {
+            float runup = 0.2 + 0.45 * (sin(_Time.y * 0.5 + patch * 4.0 + IN.positionWS.x * 0.035) * 0.5 + 0.5);
+            swash = biome.g * (1.0h - smoothstep(runup - 0.06, runup + 0.04, aboveSea));
+        }
         half damp = biome.g * (1.0h - smoothstep(0.35, 1.3, aboveSea));
+        half up = saturate(normalize(IN.normal.xyz).y);
+        half moss = smoothstep(0.18h, 0.57h, biome.r) * (1.0h - max(biome.g, biome.b));
+        moss *= smoothstep(0.35h, 0.83h, up) * smoothstep(0.45h, 0.73h, macro);
+        // Preserve detail in the existing soil maps and keep the growing surface matte.
+        half brightness = dot(albedo, half3(0.25h, 0.65h, 0.10h));
+        albedo = lerp(albedo, brightness * half3(0.65h, 0.94h, 0.36h), moss * 0.78h);
         half wet = saturate(max(biome.r, damp * 0.9h));
         // Rain soaks everything, less on steep ground where water runs off.
-        wet = max(wet, (half)(_CW_RainWet * lerp(0.45, 0.95, saturate(normalize(IN.normal.xyz).y)) * lerp(0.45, 1.0, CW_RainExposure(IN.positionWS.xz))));
-        albedo *= lerp(1.0h, 0.52h, wet);
-        smoothness = lerp(smoothness, 0.8h, wet);
+        wet = max(wet, (half)(_CW_RainWet * lerp(0.45, 0.95, up) * lerp(0.45, 1.0, CW_RainExposure(IN.positionWS.xz))));
+        // Moist hollows catch the sky, while exposed grains keep a broader highlight.
+        half moisture = lerp(1.0h, lerp(1.12h, 0.78h, macro), _JF_MacroVariation);
+        wet = saturate(wet * moisture);
+        albedo *= lerp(1.0h, half3(0.49h, 0.57h, 0.55h), wet);
+        smoothness = lerp(smoothness, lerp(0.84h, 0.68h, macro), wet);
+        smoothness = lerp(smoothness, 0.25h, moss * 0.8h);
         normalTS = normalize(lerp(normalTS, half3(0, 0, 1), wet * 0.45h));
         half puddle = saturate((wet - 0.55h) * 4.0h) * saturate((wet * 0.85h - hitHeight) * 5.0h);
         puddle = max(puddle, swash);
